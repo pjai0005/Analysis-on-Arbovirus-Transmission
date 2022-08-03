@@ -23,23 +23,18 @@ library(broom)
 ```{r}
 # yearly <- file.choose()
 # yearly_data <- read_csv(yearly)
- 
+
 full <- file.choose()
 full_data <- read_csv(full)
-
-sa3_geo_data <- st_as_sf(st_read("data/SA3/SA3_2021_AUST_GDA2020.shp"))
  
-joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME21"))
+sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp"))
+ 
+joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
+
+joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
+
 class(joint_data)
+
+# ggplot(joint_data) + 
+#   geom_sf()
 ```
-
-```{r}
-library(maps)
-us <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
-us_tbl <- as_tibble(us)
-
-ggplot(joint_data) + 
-  geom_sf()
-```
-
-
