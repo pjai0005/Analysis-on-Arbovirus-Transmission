@@ -1,0 +1,64 @@
+---
+title: "Task_1"
+author: "Sahinya Akila, Prachi Jaiswal"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(sf)
+library(broom)
+library(readxl)
+```
+
+```{r}
+full_data <- read_csv(file.choose())
+ 
+sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
+  select(SA3_NAME11)
+```
+
+```{r}
+shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
+
+shapefile_df <- fortify(shapefile)
+
+ggplot() +
+geom_path(data = shapefile_df, 
+          aes(x = long, y = lat, group = group),
+          color = 'black', fill = 'white', size = .2)
+
+joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
+
+joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
+
+```
+
+
+```{r, connection_map}
+
+filename <- file.choose()
+virus_list <-  c("Dengue", 
+                   "West_Nile_Kunjin", 
+                   "Zika", 
+                   "Chikungunya",
+                   "Japanese_Encephalitis_Virus")
+  
+con_data <- data.frame()
+  
+for(i in 1:5)
+{
+  con_data <- rbind(con_data, read_excel(filename, sheet = i) %>%
+                      add_column(Virus = virus_list[i]))
+}
+
+
+```
