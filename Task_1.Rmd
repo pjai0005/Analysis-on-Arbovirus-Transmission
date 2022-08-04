@@ -30,13 +30,29 @@ library(readxl)
 
 full_data <- read_csv(file.choose())
  
-sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp"))
+sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
+  select(SA3_NAME11)
  
 joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
 
 joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
+```
 
-# class(joint_data)
+```{r}
+plot(sa3_geo_data, col="#f2f2f2", bg="skyblue", lwd=0.25, border=0 )
+
+ggplot() + geom_polygon(data = sa3_geo_data, aes(x = long, y = lat, group = group), colour = "black", fill = NA)
+
+```
+
+```{r}
+library(rgdal)
+shapefile <- readOGR(dsn = "~/Documents/Lifeblood/ETC5543/Data/SA3_2011/")
+shapefile_df <- fortify(shapefile)
+ggplot() +
+geom_path(data = shapefile_df, 
+          aes(x = long, y = lat, group = group),
+          color = 'gray', fill = 'white', size = .2)
 
 ```
 
@@ -60,4 +76,3 @@ joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
 
 
 ```
-
