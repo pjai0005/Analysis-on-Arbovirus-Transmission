@@ -17,31 +17,43 @@ library(ggplot2)
 library(sf)
 library(broom)
 library(readxl)
+library(rgdal)
+library(tigris)
 ```
 
 ```{r}
 full_data <- read_csv(file.choose())
  
-sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
-  select(SA3_NAME11)
 ```
 
 ```{r}
 shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
 
-shapefile_df <- fortify(shapefile)
+shapefile_df <- fortify(shapefile, region = "SA3_NAME11")
+
+data_avg_2007 <- full_data %>% 
+  group_by(SA3_NAME_2011, Year) %>% 
+  summarise(mean_incidence_rate = mean(BFV_IRLA)) %>% 
+  filter(Year == "2007")
+
+shapefile_df <- shapefile_df %>%
+  left_join(. , data_avg_2007, by=c("id"="SA3_NAME_2011"))
 
 ggplot() +
 geom_path(data = shapefile_df, 
           aes(x = long, y = lat, group = group),
           color = 'black', fill = 'white', size = .2)
 
-joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
+library(viridis)
+ggplot() +
+  geom_polygon(data = shapefile_df, 
+               aes(fill = mean_incidence_rate, x = long, y = lat, group = group)) +
+  theme_void() +
+  scale_fill_viridis(trans = "log", breaks=c(1,5,10,20,50,100)) +
+  coord_map()
 
-joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
 
 ```
-
 
 ```{r, connection_map}
 
