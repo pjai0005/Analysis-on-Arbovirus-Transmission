@@ -11,44 +11,61 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE)
 ```
 
-```{r}
+```{r libraries}
 library(tidyverse)
 library(ggplot2)
 library(sf)
 library(broom)
 library(readxl)
 library(rgdal)
+library(themis)
+library(leaflet)
+library(openxlsx)
 ```
 
 ```{r read_data}
-full_data <- read_csv(file.choose())
- 
-sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
-  select(SA3_NAME11)
+# full_data <- read_csv(file.choose())
+
+# SA3 Shape File
+shapefile_df <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>% 
+  fortify(region = "SA3_NAME11") %>% 
+  rename(alat = lat,
+         along = long,
+         aname = id)
+
+
+# World Data Shape File
+world_df <- readOGR( 
+  dsn= paste0(getwd(),"/DATA/World_Shapefile/") , 
+  layer="TM_WORLD_BORDERS_SIMPL-0.3",
+  verbose=FALSE) %>% fortify(region = "NAME") %>% 
+  rename(wlat = lat,
+         wlong = long,
+         wname = id)
 ```
 
 
 ```{r, cleaning}
 
-filename <- file.choose()
+imported <- file.choose()
 virus_list <-  c("Dengue", 
                    "West_Nile_Kunjin", 
                    "Zika", 
                    "Chikungunya",
                    "Japanese_Encephalitis_Virus")
   
-con_data <- data.frame()
+connection_data <- data.frame()
   
 for(i in 1:5)
   {
-    con_data <- rbind(con_data, read_excel(filename, sheet = i) %>%
+    connection_data <- rbind(connection_data, read_excel(imported, sheet = i) %>%
                         add_column(Virus = virus_list[i]))
   }
 
 
- connection_data <- con_data %>% 
+ connection_data <- connection_data %>% 
    filter(!`Country of Origin` %in% c("No data available", "Overseas - Country unknown", 
-                                      "At Sea", "Unknown", "No data supplied") &
+                                      "At Sea", "Unknown", "No data supplied", "Australia") &
             !`Residential location (SA3)` %in% c("No data available", "Overseas - Country unknown", 
                                       "At Sea", "No data supplied", "Unknown")) %>% 
    mutate(`Country of Origin` = 
@@ -68,28 +85,45 @@ for(i in 1:5)
 
 ```
 
-```{r read_shapefile}
+```{r map}
 
-# SA3 Shape File
-shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
-
-shapefile_df <- fortify(shapefile, region = "SA3_NAME11")
-
-
-# World Data Shape File
-world_df <- readOGR( 
-  dsn= paste0(getwd(),"/DATA/World_Shapefile/") , 
-  layer="TM_WORLD_BORDERS_SIMPL-0.3",
-  verbose=FALSE) %>% fortify(region = "NAME")
+# # Binding shape files
+# joint_data <- rbind(world_df, shapefile_df)
+# 
+# ggplot() +
+# geom_path(data = joint_data,
+#           aes(x = long, y = lat, group = group),
+#           color = 'Dark Green', size = .2)
 
 
-# Binding shape files
-joint_data <- rbind(world_df, shapefile_df)
+# final_map_data <- final_map_data %>%
+#   inner_join(. , shapefile_df, by=c("Residential location (SA3)"="aname"))
 
-ggplot() +
-geom_path(data = joint_data, 
-          aes(x = long, y = lat, group = group),
-          color = 'Dark Green', fill = 'white', size = .2)
+
+final_map_data <- connection_data %>% 
+  inner_join(. , world_df, by=c("Country of Origin"="wname"))%>% 
+  group_by(Virus, `Country of Origin`) %>% 
+  summarise(wlat = mean(wlat),
+            wlong = mean(wlong),
+            count = sum(Count)) %>% 
+  rename(wname = "Country of Origin") 
+  
+content <- paste(sep = "<br/>",
+  "Virus Imported from: ", "<b>", final_map_data$wname, "</b>",
+  "Type of Virus: ", "<b>", final_map_data$`Virus`, "</b>",
+  "Total Imported Cases: ", "<b>", final_map_data$`count`, "</b>")
+
+
+leaflet() %>%
+  addTiles() %>%  
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T))
+
 
 ```
+
+
 
