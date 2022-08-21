@@ -115,6 +115,26 @@ content <- paste(sep = "<br/>",
 
 
 connection_map <- leaflet() %>%
+  addProviderTiles(providers$Esri.WorldStreetMap) %>% 
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             labelOptions = labelOptions(noHide = T))
+
+for (i in 1:nrow(final_map_data)){
+  connection_map <- connection_map %>% 
+    addPolylines(lng = c(final_map_data$wlong[i],137),
+               lat = c(final_map_data$wlat[i],-23.2), weight=1.5, opacity=2, color="pink")
+}
+
+connection_map %>%  setView(0, 0, zoom = 1.4) 
+
+  
+
+```
+
+```{r}
+connection_map <- leaflet() %>%
   addTiles() %>%  
   addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
                    popup=content, radius = 4, opacity = final_map_data$count) %>%
@@ -123,15 +143,36 @@ connection_map <- leaflet() %>%
              labelOptions = labelOptions(noHide = T))
 
 for (i in 1:nrow(final_map_data)){
+  
   connection_map <- connection_map %>% 
     addPolylines(lng = c(final_map_data$wlong[i],137),
-               lat = c(final_map_data$wlat[i],-23.2), weight=1, opacity=3, color="white")
+               lat = c(final_map_data$wlat[i],-23.2), weight=1.5, opacity=3, color="pink")
 }
 
 connection_map
+
+for (i in 1:nrow(final_map_data)){
+b<- gcIntermediate(c(final_map_data$wlong[i],final_map_data$wlat), c(137,-23.2),
+               n=100, 
+               addStartEnd=TRUE,
+               sp=TRUE) %>%
+  addPolylines(lng = c(final_map_data$wlong[i],137),
+               lat = c(final_map_data$wlat[i],-23.2), weight=1.5, opacity=3, color="pink")
+}
+
+
+b %>%
+  leaflet()  %>% addTiles() %>%
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat,
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T)) 
   
 
+
 ```
+
 ```{r}
 gc_intermediate <- data.frame()  
 for (i in 1:nrow(final_map_data)){
@@ -152,20 +193,30 @@ gc_intermediate %>%
   addPolylines(group = group)
 
 # addPolylines(lng = c(final_map_data$wlong[i], 137), lat=c(final_map_data$wlat[i], -23.2), weight=1, opacity=3, color="white")
+for (i in 1:nrow(final_map_data)){
+  if (abs(final_map_data$wlong[i]) + abs(137) > 180){
+    lines()
+  }
+}
+diff_of_lon=abs(final_map_data$wlong[11]) + abs(137)
 
-a <- gcIntermediate(c(final_map_data$wlong[10],final_map_data$wlat[10]), c(137,-23.2),
+a <- gcIntermediate(c(final_map_data$wlong[11],final_map_data$wlat[11]), c(137,-23.2),
                n=100, 
                addStartEnd=TRUE,
                sp=TRUE) 
-# 
-# %>%
-#   leaflet()  %>% addTiles() %>%  
-#   addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
-#                    popup=content, radius = 4, opacity = final_map_data$count) %>%
-#   addMarkers(lng = 137, lat = -23.2,
-#              label = "Australia",
-#              labelOptions = labelOptions(noHide = T)) %>% 
-#   addPolylines()
+
+
+ a %>%
+  leaflet()  %>% addTiles() %>%
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat,
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T)) %>%
+  addPolylines()
+ 
+ 
+
 
 ```
 
@@ -239,5 +290,17 @@ maps::map('world',col="#f2f2f2", fill=TRUE, bg="white",
 # add points 
 points(x=new_map_data$wlong, y=new_map_data$wlat, col="#69b3a2", cex=1, pch=20)
 
+```
+```{r}
+fulldata <- read_csv("~/Desktop/Internship/Documents/fulldata.csv") %>% 
+  pivot_longer(cols = c("BFV_CountLA" : "CHIKV_CountIMP"), #BFV_CountLA to CHIKV_CountIMP
+               names_to = "Virus",
+               values_to = "Value") 
+fulldata$commute <- ifelse(grepl("_CountLA",fulldata$Virus),'local_count',
+                           ifelse(grepl("_CountIMP",fulldata$Virus),'imp_count',
+                                  ifelse(grepl("_IRIMP",fulldata$Virus),'imp_IR',
+                                         ifelse(grepl("_IRLA",fulldata$Virus),'local_IR','na'))))
+
+  
 ```
 
