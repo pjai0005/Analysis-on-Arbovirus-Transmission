@@ -24,6 +24,7 @@ library(openxlsx)
 library(geosphere)
 ```
 
+
 ```{r read_data}
 # full_data <- read_csv(file.choose())
 
@@ -49,6 +50,30 @@ world_df <- readOGR(
 ```{r, cleaning}
 
 imported <- file.choose()
+
+
+full_data <- read_csv(file.choose())
+
+ 
+sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
+  select(SA3_NAME11)
+```
+
+```{r}
+shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
+shapefile_df <- fortify(shapefile)
+ggplot() +
+geom_path(data = shapefile_df, 
+          aes(x = long, y = lat, group = group),
+          color = 'black', fill = 'white', size = .2)
+joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
+joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
+```
+
+
+```{r, connection_map}
+filename <- file.choose()
+
 virus_list <-  c("Dengue", 
                    "West_Nile_Kunjin", 
                    "Zika", 
@@ -198,6 +223,7 @@ for (i in 1:nrow(final_map_data)){
     lines()
   }
 }
+
 diff_of_lon=abs(final_map_data$wlong[11]) + abs(137)
 
 a <- gcIntermediate(c(final_map_data$wlong[11],final_map_data$wlat[11]), c(137,-23.2),
@@ -291,6 +317,7 @@ maps::map('world',col="#f2f2f2", fill=TRUE, bg="white",
 points(x=new_map_data$wlong, y=new_map_data$wlat, col="#69b3a2", cex=1, pch=20)
 
 ```
+
 ```{r}
 fulldata <- read_csv("~/Desktop/Internship/Documents/fulldata.csv") %>% 
   pivot_longer(cols = c("BFV_CountLA" : "CHIKV_CountIMP"), #BFV_CountLA to CHIKV_CountIMP
@@ -303,4 +330,6 @@ fulldata$commute <- ifelse(grepl("_CountLA",fulldata$Virus),'local_count',
 
   
 ```
+
+
 
