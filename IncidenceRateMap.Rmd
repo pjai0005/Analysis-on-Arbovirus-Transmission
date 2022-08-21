@@ -19,6 +19,7 @@ library(broom)
 library(readxl)
 library(rgdal)
 library(tigris)
+library(leaflet)
 ```
 
 ```{r}
@@ -31,46 +32,67 @@ shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
 
 shapefile_df <- fortify(shapefile, region = "SA3_NAME11")
 
+match(paste0(virus, "_IR", type),names(full_data))
+full_data %>% 
+      filter(Year >= 2007 & Year <= 2011) %>% 
+      group_by(SA3_NAME_2011) %>% 
+  summarise_at(match(paste0(virus, "_IR", type),names(full_data))-1, mean)
+
+full_data[grepl(paste0(virus, "_IR", type),colnames(full_data))]
+
 data_avg_2007 <- full_data %>% 
   group_by(SA3_NAME_2011, Year) %>% 
-  summarise(mean_incidence_rate = mean(BFV_IRLA)) %>% 
+  summarise(mean_incidence_rate = mean()) %>% 
   filter(Year == "2007")
 
 shapefile_df <- shapefile_df %>%
   left_join(. , data_avg_2007, by=c("id"="SA3_NAME_2011"))
+input <- data.frame(virus = c("BFV"), type = c("LA"))
+data_avg <- full_data %>% 
+      filter(Year >= 2007 & Year <= 2011) %>% 
+      group_by(SA3_NAME_2011) %>% 
+      summarise_at(match(paste0(input$virus, "_IR", input$type),names(full_data))-1, list(mean = mean))
+    
+    shapefile_temp <- geo_join(shapefile, data_avg, "SA3_NAME11", "SA3_NAME_2011")
+    leaflet(shapefile_temp) %>%
+      addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                  fillColor = ~colorNumeric("RdYlBu", mean)(mean),
+                  highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                      bringToFront = TRUE))
+```
 
-ggplot() +
-geom_path(data = shapefile_df, 
-          aes(x = long, y = lat, group = group),
-          color = 'black', fill = 'white', size = .2)
-
-library(viridis)
-ggplot() +
-  geom_polygon(data = shapefile_df, 
-               aes(fill = mean_incidence_rate, x = long, y = lat, group = group)) +
-  theme_void() +
-  scale_fill_viridis(trans = "log", breaks=c(1,5,10,20,50,100)) +
-  coord_map()
-
+```{r}
+shapefile_temp <- geo_join(shapefile, data_avg_2007, "SA3_NAME11", "SA3_NAME_2011")
+leaflet(shapefile_temp) %>%
+  addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    fillColor = ~colorNumeric("RdYlBu", mean_incidence_rate)(mean_incidence_rate),
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE))
 
 ```
 
-```{r, connection_map}
-
-filename <- file.choose()
-virus_list <-  c("Dengue", 
-                   "West_Nile_Kunjin", 
-                   "Zika", 
-                   "Chikungunya",
-                   "Japanese_Encephalitis_Virus")
-  
-con_data <- data.frame()
-  
-for(i in 1:5)
-{
-  con_data <- rbind(con_data, read_excel(filename, sheet = i) %>%
-                      add_column(Virus = virus_list[i]))
-}
-
-
+```{r}
+output$ir_map <- renderLeaflet({
+    if (input$groupYear == "1"){
+      start_year <- 2002
+      end_year <- 2006
+    } else if (input$groupYear == "2"){
+      start_year <- 2007
+      end_year <- 2011
+    } else {
+      start_year <- 2012
+      end_year <- 2017
+    }
+    data_avg <- full_data %>% 
+      filter(Year >= 2007 & Year <= 2011) %>% 
+      group_by(SA3_NAME_2011) %>% 
+      summarise_at(match(paste0(input$virus, "_IR", input$type),names(full_data))-1, list(mean = mean))
+    
+    shapefile_temp <- geo_join(shapefile, data_avg, "SA3_NAME11", "SA3_NAME_2011")
+    leaflet(shapefile_temp) %>%
+      addPolygons(color = "#444444", 
+                  weight = 1, 
+                  fillColor = ~colorNumeric("RdYlBu", mean)(mean))
+  })
 ```
+
