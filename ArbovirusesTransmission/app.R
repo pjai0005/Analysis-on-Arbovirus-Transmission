@@ -9,13 +9,33 @@ library(shinydashboard)
 shapefile <- readOGR(dsn = paste0(getwd(), "/../Data/SA3_2011/"))
 full_data <- read_csv(file.choose())
 
+get.centroid.bb <- function(x){
+  N <- length(x)  # Number of polygons
+  # Initialise data.frame
+  Centroids.bb <- data.frame(matrix(NA, N, 2, dimnames = list(NULL, c("long", "lat"))))
+  for(i in 1:N){
+    # Bounding box of polygon
+    bb <- bbox(x@polygons[[i]])
+    # Compute centroid
+    Centroids.bb[i,] <- c(
+      0.5 * (bb[1,1] + bb[1,2]),
+      0.5 * (bb[2,1] + bb[2,2]))
+  }
+  return(Centroids.bb)
+}
+
+centroid <- get.centroid.bb(shapefile) %>% cbind(shapefile$SA3_NAME11)
+colnames(centroid) <- c("long", "lat", "SA3_NAME_2011")
 sidebar <- dashboardSidebar(
   width = 350,
   sidebarMenu(
     menuItem("Incidence Rate Comparison", 
              menuSubItem(tabName = "connection", text = "Connection Map"),
              menuSubItem(text = "Incidence Rate for Group Year" , tabName = "ir_group_year"),
-             menuSubItem(tabName = "bubble_map", text = "Bubble Map for LA vs IMP Cases"))
+             menuSubItem(tabName = "bubble_map", text = "Bubble Map for LA vs IMP Cases")),
+    menuItem("Donation Rate",
+             menuSubItem(tabName = "donation_bubble", text = "Donation Rate by SA3 Regions"),
+             menuSubItem(tabName = "donation_rate_time", text = "Donation Rate vs Incidence Rate over time"))
   )
 )
 
@@ -30,9 +50,8 @@ body <- dashboardBody(
                 sidebarPanel(
                       radioButtons("groupYear",
                                     "Select a Group Year:",
-                                   c("2002-2006" = "1",
-                                     "2007-2011" = "2",
-                                     "2012-2017" = "3")),
+                                   c("2007-2011" = "1",
+                                     "2012-2017" = "2")),
               radioButtons("type",
                            "Locations: ",
                            c("Locally Acquired" = "LA",
@@ -53,6 +72,16 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "bubble_map",
             h2("Animated Bubble Map for LA vs IMP Cases Comparison")
+  ),
+  tabItem(tabName = "donation_bubble",
+          h2("Donation Rate for by SA3 Region"),
+          sidebarLayout(sidebarPanel(
+            selectInput("sa3_donation","Select SA3 Region: ",
+                        unique(full_data$SA3_NAME_2011), multiple = TRUE)
+          ),
+          mainPanel(
+            leafletOutput("dr_map", height = 500)
+          ))
   ))
 )
 
@@ -82,9 +111,6 @@ shinyApp(
       })
       output$ir_map <- renderLeaflet({
         if (input$groupYear == "1"){
-          start_year <- 2002
-          end_year <- 2006
-        } else if (input$groupYear == "2"){
           start_year <- 2007
           end_year <- 2011
         } else {
@@ -92,10 +118,10 @@ shinyApp(
           end_year <- 2017
         }
         data_avg <- full_data %>%
-          filter(Year >= 2007 & Year <= 2011) %>%
+          filter(Year >= start_year & Year <= end_year) %>%
           group_by(SA3_NAME_2011) %>%
           summarise_at(match(paste0(input$virus, "_IR", input$type),names(full_data))-1, list(mean = mean))
-
+        
         content <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",data_avg$SA3_NAME_2011, "<br>",
                           "<b>Avg. Incidence Rate: </b>", round(data_avg$mean, 2))
 
@@ -111,6 +137,29 @@ shinyApp(
                       popup = content) %>%
           addLegend("topright", pal = pal, values = ~mean, opacity = 1, title = "Mean Incidence Rate") %>%
           setMapWidgetStyle(list(background= "white"))
+      })
+      
+      output$dr_map <- renderLeaflet({
+        if (is.null(input$sa3_donation)){
+          data <- full_data %>% group_by(SA3_NAME_2011) %>%
+            summarise(avg_donation_rate = mean(donationrate1000))
+        } else {
+          data <- full_data %>%
+            filter(SA3_NAME_2011 %in% input$sa3_donation) %>%
+            group_by(SA3_NAME_2011) %>%
+            summarise(avg_donation_rate = mean(donationrate1000))
+        }
+        data <- full_join(centroid, data) %>% na.omit()
+        pal <- colorNumeric("RdBu", data$avg_donation_rate, reverse = TRUE)
+        content <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",data$SA3_NAME_2011, "<br>",
+                          "<b>Avg. Donation Rate: </b>", round(data$avg_donation_rate, 2))
+        data %>%
+          leaflet() %>%
+          addTiles() %>%
+          setView(lat = -30, lng = 138, zoom = 4)%>%
+            addProviderTiles("CartoDB.Positron")  %>%
+          addCircleMarkers(~long, ~lat,
+                           fillColor = ~pal(avg_donation_rate), fillOpacity = 0.7, color="white", radius=10, stroke=FALSE, popup = content) %>% addLegend( pal=pal, values=~avg_donation_rate, opacity=0.9, title = "Avg. Donation Rate", position = "topright")
       })
   }
 )
