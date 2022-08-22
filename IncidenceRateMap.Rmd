@@ -96,3 +96,27 @@ output$ir_map <- renderLeaflet({
   })
 ```
 
+```{r}
+get.centroid.bb <- function(x){
+    N <- length(x)  # Number of polygons
+    # Initialise data.frame
+    Centroids.bb <- data.frame(matrix(NA, N, 2, dimnames = list(NULL, c("long", "lat"))))
+    for(i in 1:N){
+        # Bounding box of polygon
+        bb <- bbox(x@polygons[[i]])
+        # Compute centroid
+        Centroids.bb[i,] <- c(
+            0.5 * (bb[1,1] + bb[1,2]),
+            0.5 * (bb[2,1] + bb[2,2]))
+    }
+    return(Centroids.bb)
+}
+
+centroid <- get.centroid.bb(shapefile) %>% cbind(shapefile$SA3_NAME11)
+colnames(centroid) <- c("long", "lat", "SA3_NAME_2011")
+data <- full_data %>% group_by(SA3_NAME_2011) %>%
+            summarise(avg_donation_rate = mean(donationrate1000))
+joined_data <- inner_join(centroid, data)
+```
+
+
