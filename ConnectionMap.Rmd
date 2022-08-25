@@ -11,16 +11,49 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE)
 ```
 
-```{r}
+```{r libraries}
 library(tidyverse)
 library(ggplot2)
 library(sf)
 library(broom)
 library(readxl)
+library(rgdal)
+library(themis)
+library(leaflet)
+library(openxlsx)
+library(geosphere)
 ```
 
-```{r}
+
+```{r read_data}
+# full_data <- read_csv(file.choose())
+
+# SA3 Shape File
+shapefile_df <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>% 
+  fortify(region = "SA3_NAME11") %>% 
+  rename(alat = lat,
+         along = long,
+         aname = id)
+
+
+# World Data Shape File
+world_df <- readOGR( 
+  dsn= paste0(getwd(),"/DATA/World_Shapefile/") , 
+  layer="TM_WORLD_BORDERS_SIMPL-0.3",
+  verbose=FALSE) %>% fortify(region = "NAME") %>% 
+  rename(wlat = lat,
+         wlong = long,
+         wname = id)
+```
+
+
+```{r, cleaning}
+
+imported <- file.choose()
+
+
 full_data <- read_csv(file.choose())
+
  
 sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
   select(SA3_NAME11)
@@ -40,17 +73,263 @@ joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
 
 ```{r, connection_map}
 filename <- file.choose()
+
 virus_list <-  c("Dengue", 
                    "West_Nile_Kunjin", 
                    "Zika", 
                    "Chikungunya",
                    "Japanese_Encephalitis_Virus")
   
-con_data <- data.frame()
+connection_data <- data.frame()
   
 for(i in 1:5)
-{
-  con_data <- rbind(con_data, read_excel(filename, sheet = i) %>%
-                      add_column(Virus = virus_list[i]))
-}
+  {
+    connection_data <- rbind(connection_data, read_excel(imported, sheet = i) %>%
+                        add_column(Virus = virus_list[i]))
+  }
+
+
+ connection_data <- connection_data %>% 
+   filter(!`Country of Origin` %in% c("No data available", "Overseas - Country unknown", 
+                                      "At Sea", "Unknown", "No data supplied", "Australia") &
+            !`Residential location (SA3)` %in% c("No data available", "Overseas - Country unknown", 
+                                      "At Sea", "No data supplied", "Unknown")) %>% 
+   mutate(`Country of Origin` = 
+      ifelse(`Country of Origin` =="China (excludes SARs and Taiwan)", "China",
+      ifelse(`Country of Origin` == "Venezuela, Bolivarian Republic of", "Venezuela",
+      ifelse(`Country of Origin` == "Samoa, American", "Samoa",
+      ifelse(`Country of Origin` == "Bolivia, Plurinational State of", "Bolivia",
+      ifelse(`Country of Origin` == "Congo, Democratic Republic of", "Congo",
+      ifelse(`Country of Origin` == "Macau (SAR of China)", "Macau",
+      ifelse(`Country of Origin` == "United Kingdom, Channel Islands and Isle of Man", "United Kingdom",
+      ifelse(`Country of Origin` == "Hong Kong (SAR of China)", "Hong Kong",
+      ifelse(`Country of Origin` == "Congo, Republic of", "Congo", 
+      ifelse(`Country of Origin` == "Myanmar, The Republic of the Union of", "Myanmar", `Country of Origin`)))))))))))
+ 
+ connection_data <- connection_data[!grepl("nfd|nec", connection_data$`Country of Origin`),] 
+
+
 ```
+
+```{r map}
+
+# # Binding shape files
+# joint_data <- rbind(world_df, shapefile_df)
+# 
+# ggplot() +
+# geom_path(data = joint_data,
+#           aes(x = long, y = lat, group = group),
+#           color = 'Dark Green', size = .2)
+
+
+final_map_data <- connection_data %>% 
+  group_by(Virus, `Country of Origin`) %>% 
+  summarise(count = sum(Count)) %>% 
+  inner_join(. , world_df, by=c("Country of Origin"="wname"))%>% 
+  group_by(Virus, `Country of Origin`) %>% 
+  summarise(wlat = mean(wlat),
+            wlong = mean(wlong),
+            count  = mean(count)) %>% 
+  rename(wname = "Country of Origin") %>% 
+  filter(Virus == "Zika")  
+  
+content <- paste(sep = "<br/>",
+  "Virus Imported from: ", "<b>", final_map_data$wname, "</b>",
+  "Type of Virus: ",  "<b>", final_map_data$`Virus`, "</b>",
+  "Total Imported Cases: ", "<b>", final_map_data$`count`, "</b>")
+
+
+connection_map <- leaflet() %>%
+  addProviderTiles(providers$Esri.WorldStreetMap) %>% 
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             labelOptions = labelOptions(noHide = T))
+
+for (i in 1:nrow(final_map_data)){
+  connection_map <- connection_map %>% 
+    addPolylines(lng = c(final_map_data$wlong[i],137),
+               lat = c(final_map_data$wlat[i],-23.2), weight=1.5, opacity=2, color="pink")
+}
+
+connection_map %>%  setView(0, 0, zoom = 1.4) 
+
+  
+
+```
+
+```{r}
+connection_map <- leaflet() %>%
+  addTiles() %>%  
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T))
+
+for (i in 1:nrow(final_map_data)){
+  
+  connection_map <- connection_map %>% 
+    addPolylines(lng = c(final_map_data$wlong[i],137),
+               lat = c(final_map_data$wlat[i],-23.2), weight=1.5, opacity=3, color="pink")
+}
+
+connection_map
+
+for (i in 1:nrow(final_map_data)){
+b<- gcIntermediate(c(final_map_data$wlong[i],final_map_data$wlat), c(137,-23.2),
+               n=100, 
+               addStartEnd=TRUE,
+               sp=TRUE) %>%
+  addPolylines(lng = c(final_map_data$wlong[i],137),
+               lat = c(final_map_data$wlat[i],-23.2), weight=1.5, opacity=3, color="pink")
+}
+
+
+b %>%
+  leaflet()  %>% addTiles() %>%
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat,
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T)) 
+  
+
+
+```
+
+```{r}
+gc_intermediate <- data.frame()  
+for (i in 1:nrow(final_map_data)){
+  dataframe1 <- cbind(gcIntermediate(c(final_map_data$wlong[i],final_map_data$wlat[i]), c(137,-23.2),
+               n=100, 
+               addStartEnd=TRUE,
+               sp=TRUE) , group = i)
+  gc_intermediate <- rbind(gc_intermediate,dataframe1)
+}
+
+gc_intermediate %>%
+  leaflet()  %>% addTiles() %>%  
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T)) %>% 
+  addPolylines(group = group)
+
+# addPolylines(lng = c(final_map_data$wlong[i], 137), lat=c(final_map_data$wlat[i], -23.2), weight=1, opacity=3, color="white")
+for (i in 1:nrow(final_map_data)){
+  if (abs(final_map_data$wlong[i]) + abs(137) > 180){
+    lines()
+  }
+}
+
+diff_of_lon=abs(final_map_data$wlong[11]) + abs(137)
+
+a <- gcIntermediate(c(final_map_data$wlong[11],final_map_data$wlat[11]), c(137,-23.2),
+               n=100, 
+               addStartEnd=TRUE,
+               sp=TRUE) 
+
+
+ a %>%
+  leaflet()  %>% addTiles() %>%
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat,
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T)) %>%
+  addPolylines()
+ 
+ 
+
+
+```
+
+
+```{r}
+library(jpeg)
+library(maps)
+library(geosphere)
+library(grid)
+
+new_map_data <- connection_data %>% 
+  inner_join(. , world_df, by=c("Country of Origin"="wname")) %>% 
+  filter(Virus == "Zika") %>% 
+  group_by(`Country of Origin`) %>% 
+  summarise(total_count = sum(Count),
+            wlat = mean(wlat),
+            wlong = mean(wlong))%>% 
+  add_column(aname = "Australia",
+             alat = -23.2,
+             along = 137) 
+  # transform(wlong = as.numeric(wlong),
+  #           wlat = as.numeric(wlat),
+  #           along = as.numeric(along),
+  #           alat = as.numeric(alat))
+
+
+# all_pairs <- cbind(t(combn(don$long, 2)), 
+#                 t(combn(don$lat, 2))) %>% as.data.frame()
+# 
+# colnames(all_pairs)=c("long1","long2","lat1","lat2")
+
+
+```
+
+```{r}
+
+plot_my_connection=function( dep_lon, dep_lat, arr_lon, arr_lat, ...)
+  {
+      inter <- gcIntermediate(c(dep_lon, dep_lat), c(arr_lon, arr_lat), 
+                              n=50, addStartEnd=TRUE, breakAtDateLine=F)             
+      inter=data.frame(inter)
+      diff_of_lon=abs(dep_lon) + abs(arr_lon)
+      
+      if(diff_of_lon > 180)
+        {
+          lines(subset(inter, lon>=(-10)), ...)
+          lines(subset(inter, lon<(-10)), ...)
+        }
+      
+      else
+        {
+          lines(inter, ...)
+        }
+ }
+
+# background map
+par(mar=c(0,0,0,0))
+maps::map('world',col="#f2f2f2", fill=TRUE, bg="white", 
+          lwd=0.05,mar=rep(0,4),border=0, ylim=c(-80,80) )
+
+# add every connections:
+  for(i in 1:nrow(new_map_data))
+    {
+      plot_my_connection(new_map_data$along[i], 
+                         new_map_data$alat[i], 
+                         new_map_data$wlong[i], 
+                         new_map_data$wlat[i], 
+                         col="#69b3a2", lwd=1)
+    }
+
+# add points 
+points(x=new_map_data$wlong, y=new_map_data$wlat, col="#69b3a2", cex=1, pch=20)
+
+```
+
+```{r}
+fulldata <- read_csv("~/Desktop/Internship/Documents/fulldata.csv") %>% 
+  pivot_longer(cols = c("BFV_CountLA" : "CHIKV_CountIMP"), #BFV_CountLA to CHIKV_CountIMP
+               names_to = "Virus",
+               values_to = "Value") 
+fulldata$commute <- ifelse(grepl("_CountLA",fulldata$Virus),'local_count',
+                           ifelse(grepl("_CountIMP",fulldata$Virus),'imp_count',
+                                  ifelse(grepl("_IRIMP",fulldata$Virus),'imp_IR',
+                                         ifelse(grepl("_IRLA",fulldata$Virus),'local_IR','na'))))
+
+  
+```
+
+
+
