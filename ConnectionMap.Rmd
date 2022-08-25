@@ -49,12 +49,6 @@ world_df <- readOGR(
 
 ```{r, cleaning}
 
-imported <- file.choose()
-
-
-full_data <- read_csv(file.choose())
-
- 
 sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
   select(SA3_NAME11)
 ```
@@ -69,6 +63,7 @@ geom_path(data = shapefile_df,
 joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
 joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
 ```
+
 
 
 ```{r, connection_map}
@@ -157,6 +152,140 @@ connection_map %>%  setView(0, 0, zoom = 1.4)
   
 
 ```
+
+## 
+
+```{r}
+
+fulldata <- read_csv(file.choose()) %>% 
+  pivot_longer(cols = c("BFV_CountLA" : "CHIKV_CountIMP"), #BFV_CountLA to CHIKV_CountIMP
+               names_to = "Virus",
+               values_to = "Value") 
+
+# Countlocal or imported
+fulldata$Commute_Count <- ifelse(grepl("_CountLA",fulldata$Virus),'local_count',
+                           ifelse(grepl("_CountIMP",fulldata$Virus),'imp_count','na'))
+
+# IR local or imported
+fulldata$Commute_IR <- 
+                                  ifelse(grepl("_IRIMP",fulldata$Virus),'imp_IR',
+                                         ifelse(grepl("_IRLA",fulldata$Virus),'local_IR','na'))
+
+
+# transmission local or imported
+fulldata$Transmission <- 
+                                  ifelse(grepl("local_IR",fulldata$Commute_IR) | 
+                                           grepl("local_count",fulldata$Commute_Count) ,'Local',
+                                         
+       ifelse(grepl("imp_IR",fulldata$Commute_IR) | 
+                grepl("imp_count",fulldata$Commute_Count),'Imported','na'))
+
+
+
+# virus names
+fulldata$Virus_Name <- 
+                                  ifelse(grepl("BFV_",fulldata$Virus),'BFV',
+                                         ifelse(grepl("RRV_",fulldata$Virus),'RRV',
+                                                ifelse(grepl("DENV_",fulldata$Virus),'DENV',
+                                                       ifelse(grepl("ZIKV_",fulldata$Virus),'ZIKV',
+                                                              ifelse(grepl("MVEV_",fulldata$Virus),'MVEV',
+                                                ifelse(grepl("JEV_",fulldata$Virus),'JEV',
+                                                       ifelse(grepl("WNV_",fulldata$Virus),'WNV',
+                                         ifelse(grepl("CHIKV_",fulldata$Virus),'CHIKV','na')))))))) 
+
+animation <- fulldata %>% 
+  pivot_wider(names_from = c(Commute_Count, Commute_IR) ,
+              values_from = Value) %>% 
+  
+  pivot_longer(cols = c(local_count_na, imp_count_na),
+               names_to = "Count_Type",
+               values_to = "Count")%>% 
+  
+  pivot_longer(cols = c(na_local_IR, na_imp_IR),
+               names_to = "IR_Type",
+               values_to = "IR") %>% 
+  select(Year, Virus_Name, Transmission, IR, Count) %>% 
+  group_by(Year, Transmission, Virus_Name ) %>% 
+  summarise(IR = sum(IR, na.rm = TRUE),
+            Count = sum(Count, na.rm = TRUE)) %>% 
+  as.data.frame()
+
+
+  
+
+  
+```
+
+```{r}
+
+library(gganimate)
+
+
+animation <- ggplot(animation, aes(x = Virus_Name, 
+                                   y = IR, 
+                                   fill = Virus_Name)) +
+  
+  geom_bar(stat = 'identity', show.legend = FALSE, alpha = 0.9) +
+  geom_text(aes(y = 0, label = paste(" ")), vjust = 0.2, hjust = 1) +
+  geom_text(aes(y = IR, label = IR, hjust=0)) +
+  facet_wrap(~Transmission) +
+  labs(x = "Virus", y = "Incidence Rate",
+       title = "Yearly sum of virus incidence occured")+
+  theme_bw()
+
+# content <-  paste0("Year: ", Year)
+
+animation + transition_time(Year) 
+
+  # shadow_mark() +
+  # enter_grow() +
+  # enter_fade()
+
+
+library(magick)
+library(magrittr)
+
+library(gifski)
+
+png_files <- list.files("/Users/prachi/Desktop/Internship/ETC5543/Animation", 
+                        pattern = ".*png$", full.names = TRUE)
+gifski(png_files, gif_file = "/Users/prachi/Desktop/Internship/ETC5543/Animation/animation.gif",
+       width = 800, height = 600, delay = 1)
+
+knitr::include_graphics("/Users/prachi/Desktop/Internship/ETC5543/Animation/animation.gif")
+
+```
+
+```{r}
+library(gapminder)
+library(ggplot2)
+library(gganimate)
+data(gapminder)
+
+p <- ggplot(
+gapminder,
+aes(x = gdpPercap, y=lifeExp, size = pop, colour = country)
+) +
+geom_point(show.legend = FALSE, alpha = 0.7) +
+scale_color_viridis_d() +
+scale_size(range = c(2, 12)) +
+scale_x_log10() +
+labs(x = "GDP per capita", y = "Life expectancy")
+p + transition_time(year)
+
+library(magick)
+library(magrittr)
+
+library(gifski)
+png_files <- list.files("/Users/prachi/Desktop/Internship/ETC5543/temp", pattern = ".*png$", full.names = TRUE)
+gifski(png_files, gif_file = "animation.gif", width = 800, height = 600, delay = 1)
+
+knitr::include_graphics("/Users/prachi/Desktop/Internship/Documents/temp/animation.gif")
+
+```
+
+
+## Extras (Curved lines for connection map)
 
 ```{r}
 connection_map <- leaflet() %>%
@@ -318,18 +447,6 @@ points(x=new_map_data$wlong, y=new_map_data$wlat, col="#69b3a2", cex=1, pch=20)
 
 ```
 
-```{r}
-fulldata <- read_csv("~/Desktop/Internship/Documents/fulldata.csv") %>% 
-  pivot_longer(cols = c("BFV_CountLA" : "CHIKV_CountIMP"), #BFV_CountLA to CHIKV_CountIMP
-               names_to = "Virus",
-               values_to = "Value") 
-fulldata$commute <- ifelse(grepl("_CountLA",fulldata$Virus),'local_count',
-                           ifelse(grepl("_CountIMP",fulldata$Virus),'imp_count',
-                                  ifelse(grepl("_IRIMP",fulldata$Virus),'imp_IR',
-                                         ifelse(grepl("_IRLA",fulldata$Virus),'local_IR','na'))))
-
-  
-```
 
 
 
