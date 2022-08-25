@@ -5,10 +5,15 @@ library(tidyverse)
 library(tigris)
 library(leaflet.extras)
 library(shinydashboard)
+library(plotly)
 
 shapefile <- readOGR(dsn = paste0(getwd(), "/../Data/SA3_2011/"))
 full_data <- read_csv(file.choose())
 
+full_data <- cbind(full_data, full_data %>% select(contains("IR")) %>% 
+                     rowSums())
+names(full_data)[ncol(full_data)] <- "SUM_IR"
+long_data <- full_data %>% pivot_longer(cols = c("donationrate1000", "SUM_IR"), names_to = "type", values_to = "count") %>% mutate(Year = as.Date(ISOdate(Year, 1, 1)))
 get.centroid.bb <- function(x){
   N <- length(x)  # Number of polygons
   # Initialise data.frame
@@ -82,6 +87,19 @@ body <- dashboardBody(
           mainPanel(
             leafletOutput("dr_map", height = 500)
           ))
+  ),
+  tabItem(tabName = "donation_rate_time",
+          h2("Donation Rate vs Incidence Rate over time"),
+          sidebarLayout(sidebarPanel(
+            selectInput("sa3_area","Select SA3 Region: ",
+                        unique(full_data$SA3_NAME_2011), multiple = TRUE), 
+            sliderInput("date_slider", "Date Range", min = min(full_data$Year), max = max(full_data$Year),
+                        value = c(2007, 2017), sep = "")
+            
+          ),
+          mainPanel(
+            plotlyOutput("dr_graph", height = 500)
+          ))
   ))
 )
 
@@ -150,7 +168,8 @@ shinyApp(
             summarise(avg_donation_rate = mean(donationrate1000))
         }
         data <- full_join(centroid, data) %>% na.omit()
-        pal <- colorNumeric("RdBu", data$avg_donation_rate, reverse = TRUE)
+        print(data)
+        pal <- colorNumeric("RdYlGn", data$avg_donation_rate)
         content <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",data$SA3_NAME_2011, "<br>",
                           "<b>Avg. Donation Rate: </b>", round(data$avg_donation_rate, 2))
         data %>%
@@ -160,6 +179,25 @@ shinyApp(
             addProviderTiles("CartoDB.Positron")  %>%
           addCircleMarkers(~long, ~lat,
                            fillColor = ~pal(avg_donation_rate), fillOpacity = 0.7, color="white", radius=10, stroke=FALSE, popup = content) %>% addLegend( pal=pal, values=~avg_donation_rate, opacity=0.9, title = "Avg. Donation Rate", position = "topright")
+      })
+      
+      output$dr_graph <- renderPlotly({
+        if (is.null(input$sa3_area)){
+          data <- long_data %>% group_by(Year, type)%>% 
+            summarise(count = mean(count, na.rm = TRUE))
+        } else {
+          data <- long_data %>%
+            filter(SA3_NAME_2011 %in% input$sa3_area) %>% 
+            group_by(Year, type) %>% 
+            summarise(count = mean(count, na.rm = TRUE))
+        }
+        plot <- data %>% 
+          group_by(Year, type) %>% 
+          summarise(count = mean(count, na.rm = TRUE)) %>% 
+          ggplot(aes(x = Year, y = count, color = type)) +
+          geom_line()
+        
+        ggplotly(plot)
       })
   }
 )
