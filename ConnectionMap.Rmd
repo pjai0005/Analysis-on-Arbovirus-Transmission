@@ -22,11 +22,12 @@ library(themis)
 library(leaflet)
 library(openxlsx)
 library(geosphere)
+library(readr)
+library(RColorBrewer)
 ```
 
 
 ```{r read_data}
-# full_data <- read_csv(file.choose())
 
 # SA3 Shape File
 shapefile_df <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>% 
@@ -54,6 +55,9 @@ sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>%
 ```
 
 ```{r}
+
+full_data <- read_csv(file.choose())
+
 shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
 shapefile_df <- fortify(shapefile)
 ggplot() +
@@ -67,7 +71,7 @@ joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
 
 
 ```{r, connection_map}
-filename <- file.choose()
+imported <- file.choose()
 
 virus_list <-  c("Dengue", 
                    "West_Nile_Kunjin", 
@@ -157,12 +161,14 @@ connection_map %>%  setView(0, 0, zoom = 1.4)
 
 ```{r}
 
-fulldata <- read_csv(file.choose()) %>% 
+# cleaning full data
+
+fulldata <- full_data %>% 
   pivot_longer(cols = c("BFV_CountLA" : "CHIKV_CountIMP"), #BFV_CountLA to CHIKV_CountIMP
                names_to = "Virus",
                values_to = "Value") 
 
-# Countlocal or imported
+# Count local or imported
 fulldata$Commute_Count <- ifelse(grepl("_CountLA",fulldata$Virus),'local_count',
                            ifelse(grepl("_CountIMP",fulldata$Virus),'imp_count','na'))
 
@@ -191,8 +197,13 @@ fulldata$Virus_Name <-
                                                               ifelse(grepl("MVEV_",fulldata$Virus),'MVEV',
                                                 ifelse(grepl("JEV_",fulldata$Virus),'JEV',
                                                        ifelse(grepl("WNV_",fulldata$Virus),'WNV',
-                                         ifelse(grepl("CHIKV_",fulldata$Virus),'CHIKV','na')))))))) 
+                                         ifelse(grepl("CHIKV_",fulldata$Virus),'CHIKV','na'))))))))
 
+  
+```
+
+```{r}
+# data wrangling cleaned data for animation
 animation <- fulldata %>% 
   pivot_wider(names_from = c(Commute_Count, Commute_IR) ,
               values_from = Value) %>% 
@@ -210,11 +221,126 @@ animation <- fulldata %>%
             Count = sum(Count, na.rm = TRUE)) %>% 
   as.data.frame()
 
-
+# animation for imported virus
+animation_imp <- animation %>% 
+  filter(Transmission == "Imported") %>% 
+  group_by(Year) %>%
   
+  mutate(rank = rank(-IR),
+         IR_rel =  round(IR/IR[rank==1], 2),
+         IR_lbl = round(IR, 2)) %>%
+  group_by(Virus_Name) %>% ungroup()
 
+
+# animation for local virus
+animation_local <- animation %>% 
+  filter(Transmission == "Local") %>% 
+  group_by(Year) %>%
   
+  mutate(rank = rank(-IR),
+         IR_rel = round(IR/IR[rank==1], 2),
+         IR_lbl = round(IR, 2)) %>%
+  group_by(Virus_Name) %>% 
+  ungroup()
 ```
+
+
+```{r}
+# animation for local virus
+p.local <- ggplot(animation_local, aes(rank, group = Virus_Name,
+                               fill = as.factor(Virus_Name), 
+                            color = as.factor(Virus_Name))) +
+  geom_tile(aes(y = IR/2,
+                height = IR,
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 6) +
+  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 6) +
+  coord_flip(clip = "off", expand = FALSE)+   
+  scale_fill_brewer(palette = "Dark2") +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none",
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(size = 0.1, color = "black"),
+        panel.grid.minor.x = element_line(size = 0.1, color = "black"),
+        plot.title = element_text(size = 30),
+        plot.subtitle = element_text(size=18, face = "italic", 
+                                     color = "black",  hjust = 0.5, vjust = -1),
+        plot.background = element_blank(),
+        plot.margin = margin(4, 4, 4, 4, "cm"))+   
+        scale_colour_brewer(palette = "Dark2")
+
+anim_local <- p.local + 
+  transition_states(Year, transition_length = 1, state_length = 1) +
+  view_follow(fixed_x = FALSE)  +
+  labs(title = 'Cumulative sum of Incidence rate for Local Viruses in: {closest_state}',  
+       subtitle  = " ")
+
+
+animate(anim_local, 100, fps = 5,  width = 1200, height = 1000, 
+        renderer = gifski_renderer("Animation/gganim_local.gif"))
+
+```
+
+
+
+```{r}
+#animation for imported virus
+p.imp <- ggplot(animation_imp, aes(rank, group = Virus_Name,
+                               fill = as.factor(Virus_Name), 
+                            color = as.factor(Virus_Name))) +
+  geom_tile(aes(y = IR/2,
+                height = IR,
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 6) +
+  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 6) +
+  coord_flip(clip = "off", expand = FALSE)+   
+  scale_fill_brewer(palette = "Dark2") +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none",
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(size = 0.1, color = "black"),
+        panel.grid.minor.x = element_line(size = 0.1, color = "black"),
+        plot.title = element_text(size = 30),
+        plot.subtitle = element_text(size=18, face = "italic", 
+                                     color = "black",  hjust = 0.5, vjust = -1),
+        plot.background = element_blank(),
+        plot.margin = margin(4, 4, 4, 4, "cm"))+   
+        scale_colour_brewer(palette = "Dark2")
+
+anim_imp <- p.imp + 
+  transition_states(Year, transition_length = 1, state_length = 1) +
+  view_follow(fixed_x = FALSE)  +
+  labs(title = 'Cumulative sum of Incidence rate for Imported Viruses in: {closest_state}',  
+       subtitle  = " ")
+
+
+animate(anim_imp, 100, fps = 5,  width = 1200, height = 1000, 
+        renderer = gifski_renderer("Animation/gganim_imp.gif"))
+
+```
+
+
+## Extras (facet bargraph for animation)
 
 ```{r}
 
@@ -253,34 +379,6 @@ gifski(png_files, gif_file = "/Users/prachi/Desktop/Internship/ETC5543/Animation
        width = 800, height = 600, delay = 1)
 
 knitr::include_graphics("/Users/prachi/Desktop/Internship/ETC5543/Animation/animation.gif")
-
-```
-
-```{r}
-library(gapminder)
-library(ggplot2)
-library(gganimate)
-data(gapminder)
-
-p <- ggplot(
-gapminder,
-aes(x = gdpPercap, y=lifeExp, size = pop, colour = country)
-) +
-geom_point(show.legend = FALSE, alpha = 0.7) +
-scale_color_viridis_d() +
-scale_size(range = c(2, 12)) +
-scale_x_log10() +
-labs(x = "GDP per capita", y = "Life expectancy")
-p + transition_time(year)
-
-library(magick)
-library(magrittr)
-
-library(gifski)
-png_files <- list.files("/Users/prachi/Desktop/Internship/ETC5543/temp", pattern = ".*png$", full.names = TRUE)
-gifski(png_files, gif_file = "animation.gif", width = 800, height = 600, delay = 1)
-
-knitr::include_graphics("/Users/prachi/Desktop/Internship/Documents/temp/animation.gif")
 
 ```
 
