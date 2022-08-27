@@ -24,6 +24,7 @@ library(openxlsx)
 library(geosphere)
 library(readr)
 library(RColorBrewer)
+library(plotly)
 ```
 
 
@@ -52,23 +53,22 @@ world_df <- readOGR(
 
 sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
   select(SA3_NAME11)
-```
-
-```{r}
 
 full_data <- read_csv(file.choose())
 
 shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
 shapefile_df <- fortify(shapefile)
-ggplot() +
-geom_path(data = shapefile_df, 
-          aes(x = long, y = lat, group = group),
-          color = 'black', fill = 'white', size = .2)
-joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
-joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
+
+# ggplot() +
+# geom_path(data = shapefile_df, 
+#           aes(x = long, y = lat, group = group),
+#           color = 'black', fill = 'white', size = .2)
+# joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
+# joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
+
 ```
 
-
+## Connection map
 
 ```{r, connection_map}
 imported <- file.choose()
@@ -157,7 +157,8 @@ connection_map %>%  setView(0, 0, zoom = 1.4)
 
 ```
 
-## 
+
+## Animation of IR
 
 ```{r}
 
@@ -291,8 +292,6 @@ animate(anim_local, 100, fps = 5,  width = 1200, height = 1000,
 
 ```
 
-
-
 ```{r}
 #animation for imported virus
 p.imp <- ggplot(animation_imp, aes(rank, group = Virus_Name,
@@ -338,6 +337,124 @@ animate(anim_imp, 100, fps = 5,  width = 1200, height = 1000,
         renderer = gifski_renderer("Animation/gganim_imp.gif"))
 
 ```
+
+
+## Overview of rainfall
+
+```{r}
+
+rainfall <- fulldata %>% 
+  pivot_wider(names_from = c(Commute_Count, Commute_IR) ,
+              values_from = Value) %>% 
+  
+  pivot_longer(cols = c(local_count_na, imp_count_na),
+               names_to = "Count_Type",
+               values_to = "Count")%>% 
+  
+  pivot_longer(cols = c(na_local_IR, na_imp_IR),
+               names_to = "IR_Type",
+               values_to = "IR")%>% 
+  group_by(Year) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2),
+            Min_Temprature = round(mean(meanMinTavg), 2),
+            Max_Temprature = round(mean(meanMaxTavg), 2),
+            `Incidence Percent` = round(mean(IR, na.rm = TRUE), 2)*100)
+
+ggplotly  (ggplot(rainfall)+
+  theme_bw() +
+  labs(title = "Weather Conditions SA3 Regions",
+       y = " ") + 
+  scale_y_continuous(breaks = seq(-10, 100, 10))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+  
+  geom_line(aes(x = Year, y = Rainfall), linetype = "dotdash",
+            color = "blue", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Rainfall), 
+  #           color = "blue", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=65, 
+           label="Rainfall (in mm)", color="blue") +
+  
+  geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
+            color = "dark green", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Min_Temprature), 
+  #           color = "dark green", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=17, 
+           label="Min Temperature (in °C)", color="dark green")+
+  
+  geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+            color = "red", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Max_Temprature),
+  #           color = "red", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.9, y=28, 
+           label="Max Temperature (in °C)", color="red")+
+  
+  geom_line(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=5, 
+           label="Incidence Percent", color="orange") )
+
+```
+```{r}
+
+# rainfall
+ggplotly  (ggplot(rainfall)+
+  theme_bw() +
+  labs(title = "<span style = 'color:blue'> <b>Rainfall</b> </span> vs 
+       <span style = 'color:orange'><b>Incidence Rate</b></span> in SA3 Regions.",
+       y = " ") + 
+  scale_y_continuous(breaks = seq(0, 100, 10))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+  
+  geom_line(aes(x = Year, y = Rainfall), linetype = "dotdash",
+            color = "blue", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Rainfall), 
+  #           color = "blue", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=65, 
+           label="Rainfall (in mm)", color="blue") +
+  
+  geom_line(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=10, 
+           label="Incidence Percent", color="orange") )
+
+
+
+# temperature
+
+ggplotly  (ggplot(rainfall)+
+  theme_bw() +
+  labs(title = "Average Temperature vs Incidence Rate in SA3 Regions",
+       y = " ") + 
+  scale_y_continuous(breaks = seq(0, 35, 5))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+    
+  geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
+            color = "dark green", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Min_Temprature), 
+  #           color = "dark green", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=14, 
+           label="Min Temperature (in °C)", color="dark green")+
+  
+  geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+            color = "red", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Max_Temprature),
+  #           color = "red", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.9, y=25, 
+           label="Max Temperature (in °C)", color="red")+
+  
+  geom_line(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=5, 
+           label="Incidence Percent", color="orange") )
+
+```
+
 
 
 ## Extras (facet bargraph for animation)
