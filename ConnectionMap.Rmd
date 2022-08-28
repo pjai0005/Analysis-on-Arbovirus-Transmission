@@ -22,11 +22,14 @@ library(themis)
 library(leaflet)
 library(openxlsx)
 library(geosphere)
+library(readr)
+library(RColorBrewer)
+library(plotly)
+library(gganimate)
 ```
 
 
 ```{r read_data}
-# full_data <- read_csv(file.choose())
 
 # SA3 Shape File
 shapefile_df <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>% 
@@ -51,23 +54,25 @@ world_df <- readOGR(
 
 sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
   select(SA3_NAME11)
-```
 
-```{r}
+full_data <- read_csv(file.choose())
+
 shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
 shapefile_df <- fortify(shapefile)
-ggplot() +
-geom_path(data = shapefile_df, 
-          aes(x = long, y = lat, group = group),
-          color = 'black', fill = 'white', size = .2)
-joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
-joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
+
+# ggplot() +
+# geom_path(data = shapefile_df, 
+#           aes(x = long, y = lat, group = group),
+#           color = 'black', fill = 'white', size = .2)
+# joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
+# joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
+
 ```
 
-
+## Connection map
 
 ```{r, connection_map}
-filename <- file.choose()
+imported <- file.choose()
 
 virus_list <-  c("Dengue", 
                    "West_Nile_Kunjin", 
@@ -153,16 +158,19 @@ connection_map %>%  setView(0, 0, zoom = 1.4)
 
 ```
 
-## 
+
+## Animation of IR
 
 ```{r}
 
-fulldata <- read_csv(file.choose()) %>% 
+# cleaning full data
+
+fulldata <- full_data %>% 
   pivot_longer(cols = c("BFV_CountLA" : "CHIKV_CountIMP"), #BFV_CountLA to CHIKV_CountIMP
                names_to = "Virus",
                values_to = "Value") 
 
-# Countlocal or imported
+# Count local or imported
 fulldata$Commute_Count <- ifelse(grepl("_CountLA",fulldata$Virus),'local_count',
                            ifelse(grepl("_CountIMP",fulldata$Virus),'imp_count','na'))
 
@@ -191,8 +199,13 @@ fulldata$Virus_Name <-
                                                               ifelse(grepl("MVEV_",fulldata$Virus),'MVEV',
                                                 ifelse(grepl("JEV_",fulldata$Virus),'JEV',
                                                        ifelse(grepl("WNV_",fulldata$Virus),'WNV',
-                                         ifelse(grepl("CHIKV_",fulldata$Virus),'CHIKV','na')))))))) 
+                                         ifelse(grepl("CHIKV_",fulldata$Virus),'CHIKV','na'))))))))
 
+  
+```
+
+```{r}
+# data wrangling cleaned data for animation
 animation <- fulldata %>% 
   pivot_wider(names_from = c(Commute_Count, Commute_IR) ,
               values_from = Value) %>% 
@@ -210,11 +223,242 @@ animation <- fulldata %>%
             Count = sum(Count, na.rm = TRUE)) %>% 
   as.data.frame()
 
-
+# animation for imported virus
+animation_imp <- animation %>% 
+  filter(Transmission == "Imported") %>% 
+  group_by(Year) %>%
   
+  mutate(rank = rank(-IR),
+         IR_rel =  round(IR/IR[rank==1], 2),
+         IR_lbl = round(IR, 2)) %>%
+  group_by(Virus_Name) %>% ungroup()
 
+
+# animation for local virus
+animation_local <- animation %>% 
+  filter(Transmission == "Local") %>% 
+  group_by(Year) %>%
   
+  mutate(rank = rank(-IR),
+         IR_rel = round(IR/IR[rank==1], 2),
+         IR_lbl = round(IR, 2)) %>%
+  group_by(Virus_Name) %>% 
+  ungroup()
 ```
+
+
+```{r}
+# animation for local virus
+p.local <- ggplot(animation_local, aes(rank, group = Virus_Name,
+                               fill = as.factor(Virus_Name), 
+                            color = as.factor(Virus_Name))) +
+  geom_tile(aes(y = IR/2,
+                height = IR,
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 6) +
+  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 6) +
+  coord_flip(clip = "off", expand = FALSE)+   
+  scale_fill_brewer(palette = "Dark2") +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none",
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(size = 0.1, color = "black"),
+        panel.grid.minor.x = element_line(size = 0.1, color = "black"),
+        plot.title = element_text(size = 30),
+        plot.subtitle = element_text(size=18, face = "italic", 
+                                     color = "black",  hjust = 0.5, vjust = -1),
+        plot.background = element_blank(),
+        plot.margin = margin(4, 4, 4, 4, "cm"))+   
+        scale_colour_brewer(palette = "Dark2")
+
+anim_local <- p.local + 
+  transition_states(Year, transition_length = 1, state_length = 1) +
+  view_follow(fixed_x = FALSE)  +
+  labs(title = 'Local Viruses in: {closest_state}',  
+       subtitle  = " ")
+
+
+animate(anim_local, 100, fps = 5,  width = 1200, height = 1000, 
+        renderer = gifski_renderer("Animation/gganim_local.gif"))
+
+```
+
+```{r}
+#animation for imported virus
+p.imp <- ggplot(animation_imp, aes(rank, group = Virus_Name,
+                               fill = as.factor(Virus_Name), 
+                            color = as.factor(Virus_Name))) +
+  geom_tile(aes(y = IR/2,
+                height = IR,
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 6) +
+  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 6) +
+  coord_flip(clip = "off", expand = FALSE)+   
+  scale_fill_brewer(palette = "Dark2") +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none",
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(size = 0.1, color = "black"),
+        panel.grid.minor.x = element_line(size = 0.1, color = "black"),
+        plot.title = element_text(size = 30),
+        plot.subtitle = element_text(size=18, face = "italic", 
+                                     color = "black",  hjust = 0.5, vjust = -1),
+        plot.background = element_blank(),
+        plot.margin = margin(4, 4, 4, 4, "cm"))+   
+        scale_colour_brewer(palette = "Dark2")
+
+anim_imp <- p.imp + 
+  transition_states(Year, transition_length = 1, state_length = 1) +
+  view_follow(fixed_x = FALSE)  +
+  labs(title = 'Imported Viruses in: {closest_state}',  
+       subtitle  = " ")
+
+
+animate(anim_imp, 100, fps = 5,  width = 1200, height = 1000, 
+        renderer = gifski_renderer("Animation/gganim_imp.gif"))
+
+```
+
+
+## Overview of rainfall
+
+```{r}
+
+rainfall <- fulldata %>% 
+  pivot_wider(names_from = c(Commute_Count, Commute_IR) ,
+              values_from = Value) %>% 
+  
+  pivot_longer(cols = c(local_count_na, imp_count_na),
+               names_to = "Count_Type",
+               values_to = "Count")%>% 
+  
+  pivot_longer(cols = c(na_local_IR, na_imp_IR),
+               names_to = "IR_Type",
+               values_to = "IR")%>% 
+  group_by(Year) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2),
+            Min_Temprature = round(mean(meanMinTavg), 2),
+            Max_Temprature = round(mean(meanMaxTavg), 2),
+            `Incidence Percent` = round(mean(IR, na.rm = TRUE), 2)*100)
+
+ggplotly  (ggplot(rainfall)+
+  theme_bw() +
+  labs(title = "Weather Conditions SA3 Regions",
+       y = " ") + 
+  scale_y_continuous(breaks = seq(-10, 100, 10))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+  
+  geom_line(aes(x = Year, y = Rainfall), linetype = "dotdash",
+            color = "blue", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Rainfall), 
+  #           color = "blue", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=65, 
+           label="Rainfall (in mm)", color="blue") +
+  
+  geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
+            color = "dark green", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Min_Temprature), 
+  #           color = "dark green", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=17, 
+           label="Min Temperature (in °C)", color="dark green")+
+  
+  geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+            color = "red", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Max_Temprature),
+  #           color = "red", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.9, y=28, 
+           label="Max Temperature (in °C)", color="red")+
+  
+  geom_line(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=5, 
+           label="Incidence Percent", color="orange") )
+
+```
+```{r}
+
+# rainfall
+ggplotly  (ggplot(rainfall)+
+  theme_bw() +
+  labs(title = "<span style = 'color:blue'> <b>Rainfall</b> </span> vs 
+       <span style = 'color:orange'><b>Incidence Rate</b></span> in SA3 Regions.",
+       y = " ") + 
+  scale_y_continuous(breaks = seq(0, 100, 10))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+  
+  geom_line(aes(x = Year, y = Rainfall), linetype = "dotdash",
+            color = "blue", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Rainfall), 
+  #           color = "blue", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=65, 
+           label="Rainfall (in mm)", color="blue") +
+  
+  geom_line(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=10, 
+           label="Incidence Percent", color="orange") )
+
+
+
+# temperature
+
+ggplotly  (ggplot(rainfall)+
+  theme_bw() +
+  labs(title = "Average Temperature vs Incidence Rate in SA3 Regions",
+       y = " ") + 
+  scale_y_continuous(breaks = seq(0, 35, 5))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+    
+  geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
+            color = "dark green", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Min_Temprature), 
+  #           color = "dark green", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=14, 
+           label="Min Temperature (in °C)", color="dark green")+
+  
+  geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+            color = "red", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Max_Temprature),
+  #           color = "red", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.9, y=25, 
+           label="Max Temperature (in °C)", color="red")+
+  
+  geom_line(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=5, 
+           label="Incidence Percent", color="orange") )
+
+```
+
+
+
+## Extras (facet bargraph for animation)
 
 ```{r}
 
@@ -253,34 +497,6 @@ gifski(png_files, gif_file = "/Users/prachi/Desktop/Internship/ETC5543/Animation
        width = 800, height = 600, delay = 1)
 
 knitr::include_graphics("/Users/prachi/Desktop/Internship/ETC5543/Animation/animation.gif")
-
-```
-
-```{r}
-library(gapminder)
-library(ggplot2)
-library(gganimate)
-data(gapminder)
-
-p <- ggplot(
-gapminder,
-aes(x = gdpPercap, y=lifeExp, size = pop, colour = country)
-) +
-geom_point(show.legend = FALSE, alpha = 0.7) +
-scale_color_viridis_d() +
-scale_size(range = c(2, 12)) +
-scale_x_log10() +
-labs(x = "GDP per capita", y = "Life expectancy")
-p + transition_time(year)
-
-library(magick)
-library(magrittr)
-
-library(gifski)
-png_files <- list.files("/Users/prachi/Desktop/Internship/ETC5543/temp", pattern = ".*png$", full.names = TRUE)
-gifski(png_files, gif_file = "animation.gif", width = 800, height = 600, delay = 1)
-
-knitr::include_graphics("/Users/prachi/Desktop/Internship/Documents/temp/animation.gif")
 
 ```
 
