@@ -25,6 +25,7 @@ library(geosphere)
 library(readr)
 library(RColorBrewer)
 library(plotly)
+library(gganimate)
 ```
 
 
@@ -283,7 +284,7 @@ p.local <- ggplot(animation_local, aes(rank, group = Virus_Name,
 anim_local <- p.local + 
   transition_states(Year, transition_length = 1, state_length = 1) +
   view_follow(fixed_x = FALSE)  +
-  labs(title = 'Cumulative sum of Incidence rate for Local Viruses in: {closest_state}',  
+  labs(title = 'Local Viruses in: {closest_state}',  
        subtitle  = " ")
 
 
@@ -329,7 +330,7 @@ p.imp <- ggplot(animation_imp, aes(rank, group = Virus_Name,
 anim_imp <- p.imp + 
   transition_states(Year, transition_length = 1, state_length = 1) +
   view_follow(fixed_x = FALSE)  +
-  labs(title = 'Cumulative sum of Incidence rate for Imported Viruses in: {closest_state}',  
+  labs(title = 'Imported Viruses in: {closest_state}',  
        subtitle  = " ")
 
 
