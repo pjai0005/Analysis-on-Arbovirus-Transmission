@@ -79,7 +79,7 @@ body <- dashboardBody(
             h2("Animated Bubble Map for LA vs IMP Cases Comparison")
   ),
   tabItem(tabName = "donation_bubble",
-          h2("Donation Rate for by SA3 Region"),
+          h2("Donation Rate by SA3 Region"),
           sidebarLayout(sidebarPanel(
             selectInput("sa3_donation","Select SA3 Region: ",
                         unique(full_data$SA3_NAME_2011), multiple = TRUE)
