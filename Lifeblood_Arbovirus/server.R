@@ -27,8 +27,8 @@ world_df <- readOGR(
          wlong = long,
          wname = id)
 
-full_data <- read_csv("../../Data/fulldata.csv") # read_csv(file.choose())
-imported <-  "../../Data/dataset IMP viruses.xlsx"#file.choose()
+full_data <- read_csv(file.choose())
+imported <-  file.choose()
 
 full_data <- cbind(full_data, full_data %>% select(contains("IR")) %>% 
                      rowSums())
@@ -86,6 +86,76 @@ connection_data <- connection_data %>%
 
 connection_data <- connection_data[!grepl("nfd|nec", connection_data$`Country of Origin`),] 
 
+# pivoting full data to get virus names in a column
+fulldata <- full_data %>% 
+  pivot_longer(cols = c("BFV_CountLA" : "CHIKV_CountIMP"), #BFV_CountLA to CHIKV_CountIMP
+               names_to = "Virus",
+               values_to = "Value") 
+
+# Count local or imported
+fulldata$Commute_Count <- ifelse(grepl("_CountLA",fulldata$Virus),'local_count',
+                                 ifelse(grepl("_CountIMP",fulldata$Virus),'imp_count','na'))
+
+# IR local or imported
+fulldata$Commute_IR <- ifelse(grepl("_IRIMP",fulldata$Virus),'imp_IR',
+                              ifelse(grepl("_IRLA",fulldata$Virus),'local_IR','na'))
+
+
+# transmission local or imported
+fulldata$Transmission <- 
+  ifelse(grepl("local_IR",fulldata$Commute_IR) | 
+           grepl("local_count",fulldata$Commute_Count) ,'Local',
+         
+         ifelse(grepl("imp_IR",fulldata$Commute_IR) | 
+                  grepl("imp_count",fulldata$Commute_Count),'Imported','na'))
+
+
+# cleaning virus names
+fulldata$Virus_Name <- 
+  ifelse(grepl("BFV_",fulldata$Virus),'BFV',
+         ifelse(grepl("RRV_",fulldata$Virus),'RRV',
+                ifelse(grepl("DENV_",fulldata$Virus),'DENV',
+                       ifelse(grepl("ZIKV_",fulldata$Virus),'ZIKV',
+                              ifelse(grepl("MVEV_",fulldata$Virus),'MVEV',
+                                     ifelse(grepl("JEV_",fulldata$Virus),'JEV',
+                                            ifelse(grepl("WNV_",fulldata$Virus),'WNV',
+                                                   ifelse(grepl("CHIKV_",fulldata$Virus),'CHIKV','na'))))))))
+
+
+
+# extracting weather data froom full data
+weather <- fulldata %>% 
+  pivot_wider(names_from = c(Commute_Count, Commute_IR) ,
+              values_from = Value) %>% 
+  
+  pivot_longer(cols = c(local_count_na, imp_count_na),
+               names_to = "Count_Type",
+               values_to = "Count")%>% 
+  
+  pivot_longer(cols = c(na_local_IR, na_imp_IR),
+               names_to = "IR_Type",
+               values_to = "IR")
+# group_by(Year) %>% 
+# summarise(Rainfall = round(mean(Rainavg), 2),
+#           Min_Temprature = round(mean(meanMinTavg), 2),
+#           Max_Temprature = round(mean(meanMaxTavg), 2),
+#           `Incidence Percent` = round(mean(IR, na.rm = TRUE), 2)*100)
+
+w_graph <- weather%>% 
+  group_by(Year) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2),
+            Min_Temprature = round(mean(meanMinTavg), 2),
+            Max_Temprature = round(mean(meanMaxTavg), 2),
+            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
+            `Incidence Percent` = round(mean(IR, na.rm = TRUE), 2)*100)
+
+graph <- weather%>% 
+  group_by(MonthYear) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2),
+            Min_Temprature = round(mean(meanMinTavg), 2),
+            Max_Temprature = round(mean(meanMaxTavg), 2),
+            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
+            `Incidence Percent` = round(mean(IR, na.rm = TRUE), 2)*100)
 
 
 shinyServer(function(input, output) {
@@ -104,7 +174,7 @@ shinyServer(function(input, output) {
                    "Japanese Encephalitis" = "JEV",
                    "Chikungunya" = "CHIKV")
     }
-    updateSelectInput(inputId = "virus", choices = choices)
+    updateSelectInput(inputId = "virus", choices = choices, selected = "DENV")
   })
   
   output$ir_map <- renderLeaflet({
@@ -228,4 +298,213 @@ shinyServer(function(input, output) {
              paper_bgcolor = "#fcf9f2",
              fig_bgcolor   = "#fcf9f2")
   })
+  
+  
+  
+  output$rain_overview <- renderPlotly({
+    ggplotly(ggplot(graph, aes(x = Rainfall, y = `Incidence Percent`)) +
+               geom_point() +
+               stat_smooth(method = "lm")+
+               theme_bw()+
+               labs(title = "Incedence is predicted in terms of rainfall",
+                    x = "Rainfall (in mm)"))%>%
+      layout(plot_bgcolor  = "#fcf9f2",
+             paper_bgcolor = "#fcf9f2",
+             fig_bgcolor   = "#fcf9f2")
+  })
+  
+  # rainfall map
+  observeEvent(input$rain_map, {
+    
+    # if (input$rain_map == "LA"){
+    #   choices <- c("Ross River" = "RRV",
+    #                "Dengue" = "DENV",
+    #                "Barmah Forest" = "BFV",
+    #                "Murray Valley Encephalitis" = "MVEV",
+    #                "West Nile/Kunjin" = "WNV")
+    # }
+    # else {
+    # choices <- c("Dengue" = "DENV",
+    #              "Zika" = "ZIKV",
+    #              "West Nile/Kunjin" = "WNV",
+    #              "Japanese Encephalitis" = "JEV",
+    #              "Chikungunya" = "CHIKV")
+    #}
+    updateSelectInput(inputId = "rain_virus", choices = choices, selected = "DENV")
+  })
+  
+  
+  output$rainfall_map <- renderLeaflet({
+    
+    # rainfall map data 
+    if (length(input$sa3_rainfall) != 0){
+      sa3_region <- input$sa3_rainfall
+    } else {
+      sa3_region <- unique(fulldata$SA3_NAME_2011)
+    }
+    rain_map <- fulldata%>% 
+      filter(SA3_NAME_2011 %in% sa3_region) %>% 
+      group_by(SA3_NAME_2011, Virus_Name) %>% 
+      summarise(Rainfall = round(mean(Rainavg), 2))
+    
+    shapefile_rain <- geo_join(shapefile, rain_map,
+                               "SA3_NAME11", "SA3_NAME_2011")
+    
+    content_rain <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",shapefile_rain$SA3_NAME_2011, "<br>",
+                           "<b>Avg. Incidence Rate: </b>", round(shapefile_rain$Rainfall, 2))
+    
+    pal_rain <- colorNumeric("RdBu", rain_map$Rainfall, reverse = TRUE)
+    
+    leaflet(shapefile_rain) %>%
+      addPolygons(weight = 1,
+                  fillColor = ~pal_rain(Rainfall),
+                  opacity = 0.5,
+                  color = "white",
+                  fillOpacity = 0.9,
+                  smoothFactor = 0.5,
+                  popup = content_rain) %>%
+      addLegend("topright", pal = pal_rain, 
+                values = ~Rainfall, opacity = 1, 
+                title = "Average of Rainfall") %>%
+      setMapWidgetStyle(list(background= "#fcf9f2"))
+    
+  })
+  
+  output$rainfall_graph <- renderPlotly({
+    # rainfall map data 
+    if (length(input$sa3_rainfall) != 0){
+      sa3_region <- input$sa3_rainfall
+    } else {
+      sa3_region <- unique(fulldata$SA3_NAME_2011)
+    }
+    ggplotly(ggplot(w_graph)+
+               theme_bw() +
+               labs(title = "Comaparing Rainfall and Incidence Percent",
+                    y = " ") + 
+               scale_y_continuous(breaks = seq(0, 100, 10))+
+               scale_x_continuous(breaks = c(2007:2020)) +
+               
+               geom_line(aes(x = Year, y = Rainfall), linetype = "dotdash",
+                         color = "blue", alpha = 0.4, size = 1) + 
+               annotate(geom="text", x=2008.5, y=65, 
+                        label="Rainfall (in mm)", color="blue") +
+               
+               
+               geom_line(aes(x = Year, y = `Incidence Percent`), 
+                         color = "orange", alpha = 0.8, size = 1) +
+               geom_point(aes(x = Year, y = `Incidence Percent`), 
+                          color = "orange", alpha = 1, size = 1.5) +
+               annotate(geom="text", x=2008.5, y=10, 
+                        label="Incidence Percent", color="orange")) %>%
+      layout(plot_bgcolor  = "#fcf9f2",
+             paper_bgcolor = "#fcf9f2",
+             fig_bgcolor   = "#fcf9f2")
+  })
+  
+  
+  
+  output$temp_overview <- renderPlotly({
+    ggplotly(ggplot(graph, aes(x = Max_Temprature, y = `Incidence Percent`)) +
+               geom_point() +
+               stat_smooth(method = "lm")+
+               theme_bw()+
+               labs(title = "Incedence is predicted in terms of temperature"))%>%
+      layout(plot_bgcolor  = "#fcf9f2",
+             paper_bgcolor = "#fcf9f2",
+             fig_bgcolor   = "#fcf9f2")
+  })
+  
+  
+  observeEvent(input$tempmap, {
+    
+    # if (input$tempmap == "LA"){
+    #   choices <- c("Ross River" = "RRV",
+    #                "Dengue" = "DENV",
+    #                "Barmah Forest" = "BFV",
+    #                "Murray Valley Encephalitis" = "MVEV",
+    #                "West Nile/Kunjin" = "WNV")
+    # }
+    # else {
+    # choices <- c("Dengue" = "DENV",
+    #              "Zika" = "ZIKV",
+    #              "West Nile/Kunjin" = "WNV",
+    #              "Japanese Encephalitis" = "JEV",
+    #              "Chikungunya" = "CHIKV")
+    #}
+    updateSelectInput(inputId = "temp_virus", choices = choices, selected = "DENV")
+  })
+  
+  output$temp_map <- renderLeaflet({
+    
+    # rainfall map data 
+    if (length(input$sa3_temp) != 0){
+      sa3_region <- input$sa3_temp
+    } else {
+      sa3_region <- unique(fulldata$SA3_NAME_2011)
+    }
+    # temperature map data 
+    temp_map <- fulldata%>% 
+      filter(SA3_NAME_2011 %in% sa3_region) %>% 
+      group_by(SA3_NAME_2011, Virus_Name) %>% 
+      summarise(Max_temp = round(mean(meanMaxTavg), 2),
+                Min_temp = round(mean(meanMinTavg), 2),
+                `Average Temperature` = round((Max_temp+Min_temp)/2, 2))
+    
+    shapefile_temp <- geo_join(shapefile, temp_map,
+                               "SA3_NAME11", "SA3_NAME_2011")
+    
+    content_temp <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",shapefile_temp$SA3_NAME_2011, "<br>",
+                           "<b>Avg. Incidence Rate: </b>", round(shapefile_temp$Max_temp, 2))
+    
+    pal_temp <- colorNumeric("RdBu", temp_map$Max_temp, reverse = TRUE)
+    
+    leaflet(shapefile_temp) %>%
+      addPolygons(weight = 1,
+                  fillColor = ~pal_temp(Max_temp),
+                  opacity = 0.5,
+                  color = "white",
+                  fillOpacity = 0.9,
+                  smoothFactor = 0.5,
+                  popup = content_temp) %>%
+      addLegend("topright", pal = pal_temp, 
+                values = ~Max_temp, opacity = 1, 
+                title = "Average of Temperature")  %>%
+      setMapWidgetStyle(list(background= "#fcf9f2"))
+    
+  })
+  
+  output$temp_graph <- renderPlotly({
+    if (length(input$sa3_temp) != 0){
+      sa3_region <- input$sa3_temp
+    } else {
+      sa3_region <- unique(fulldata$SA3_NAME_2011)
+    }
+    ggplotly(ggplot(w_graph)+
+      theme_bw() +
+      labs(title = "Comaparing Temperature and Incidence Percent",
+           y = " ") + 
+      scale_y_continuous(breaks = seq(0, 30, 5))+
+      scale_x_continuous(breaks = c(2007:2020)) +
+      
+      geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
+                color = "dark green", alpha = 0.4, size = 1) +
+      annotate(geom="text", x=2008.9, y=14,
+               label="Min Temperature (in °C)", color="dark green")+
+      
+      geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+                color = "red", alpha = 0.4, size = 1) +
+      annotate(geom="text", x=2008.9, y=25,
+               label="Max Temperature (in °C)", color="red")+
+      
+      geom_line(aes(x = Year, y = `Incidence Percent`), 
+                color = "orange", alpha = 0.8, size = 1) +
+      geom_point(aes(x = Year, y = `Incidence Percent`), 
+                 color = "orange", alpha = 1, size = 1.5) +
+      annotate(geom="text", x=2008.5, y=10, 
+               label="Incidence Percent", color="orange"))%>%
+      layout(plot_bgcolor  = "#fcf9f2",
+             paper_bgcolor = "#fcf9f2",
+             fig_bgcolor   = "#fcf9f2")
+  })
+  
 })
