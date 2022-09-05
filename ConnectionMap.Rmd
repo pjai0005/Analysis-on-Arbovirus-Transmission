@@ -26,18 +26,20 @@ library(readr)
 library(RColorBrewer)
 library(plotly)
 library(gganimate)
+library(tigris)
 ```
 
 
 ```{r read_data}
 
 # SA3 Shape File
-shapefile_df <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>% 
+shapefile_df <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))%>%  
   fortify(region = "SA3_NAME11") %>% 
   rename(alat = lat,
          along = long,
-         aname = id)
-
+         aname = id) 
+new_shapefile <-  st_read(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>% st_geometry(shapefile_df) %>% 
+  fortify(region = "SA3_NAME11")
 
 # World Data Shape File
 world_df <- readOGR( 
@@ -55,10 +57,8 @@ world_df <- readOGR(
 sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
   select(SA3_NAME11)
 
-full_data <- read_csv(file.choose())
 
-shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
-shapefile_df <- fortify(shapefile)
+shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>%  fortify(shapefile)
 
 # ggplot() +
 # geom_path(data = shapefile_df, 
@@ -163,6 +163,9 @@ connection_map %>%  setView(0, 0, zoom = 1.4)
 
 ```{r}
 
+
+full_data <- read_csv(file.choose())
+
 # cleaning full data
 
 fulldata <- full_data %>% 
@@ -245,7 +248,6 @@ animation_local <- animation %>%
   group_by(Virus_Name) %>% 
   ungroup()
 ```
-
 
 ```{r}
 # animation for local virus
@@ -340,11 +342,11 @@ animate(anim_imp, 100, fps = 5,  width = 1200, height = 1000,
 ```
 
 
-## Overview of rainfall
+## Overview of weather
 
 ```{r}
 
-rainfall <- fulldata %>% 
+weather <- fulldata %>% 
   pivot_wider(names_from = c(Commute_Count, Commute_IR) ,
               values_from = Value) %>% 
   
@@ -354,53 +356,54 @@ rainfall <- fulldata %>%
   
   pivot_longer(cols = c(na_local_IR, na_imp_IR),
                names_to = "IR_Type",
-               values_to = "IR")%>% 
+               values_to = "IR")
+
+w_graph <- weather%>% 
   group_by(Year) %>% 
   summarise(Rainfall = round(mean(Rainavg), 2),
             Min_Temprature = round(mean(meanMinTavg), 2),
             Max_Temprature = round(mean(meanMaxTavg), 2),
+            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
             `Incidence Percent` = round(mean(IR, na.rm = TRUE), 2)*100)
 
-ggplotly  (ggplot(rainfall)+
-  theme_bw() +
-  labs(title = "Weather Conditions SA3 Regions",
-       y = " ") + 
-  scale_y_continuous(breaks = seq(-10, 100, 10))+
-  scale_x_continuous(breaks = c(2007:2020)) +
-  
-  geom_line(aes(x = Year, y = Rainfall), linetype = "dotdash",
-            color = "blue", alpha = 0.4, size = 1) + 
-  # geom_point(aes(x = Year, y = Rainfall), 
-  #           color = "blue", alpha = 0.7, size = 1.5) + 
-  annotate(geom="text", x=2008.5, y=65, 
-           label="Rainfall (in mm)", color="blue") +
-  
-  geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
-            color = "dark green", alpha = 0.4, size = 1) + 
-  # geom_point(aes(x = Year, y = Min_Temprature), 
-  #           color = "dark green", alpha = 0.7, size = 1.5) + 
-  annotate(geom="text", x=2008.5, y=17, 
-           label="Min Temperature (in °C)", color="dark green")+
-  
-  geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
-            color = "red", alpha = 0.4, size = 1) +
-  # geom_point(aes(x = Year, y = Max_Temprature),
-  #           color = "red", alpha = 0.7, size = 1.5) +
-  annotate(geom="text", x=2008.9, y=28, 
-           label="Max Temperature (in °C)", color="red")+
-  
-  geom_line(aes(x = Year, y = `Incidence Percent`), 
-            color = "orange", alpha = 0.8, size = 1) +
-  geom_point(aes(x = Year, y = `Incidence Percent`), 
-            color = "orange", alpha = 1, size = 1.5) +
-  annotate(geom="text", x=2008.5, y=5, 
-           label="Incidence Percent", color="orange") )
+
+graph <- weather%>% 
+  group_by(MonthYear) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2),
+            Min_Temprature = round(mean(meanMinTavg), 2),
+            Max_Temprature = round(mean(meanMaxTavg), 2),
+            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
+            `Incidence Percent` = round(mean(IR, na.rm = TRUE), 2)*100)
+
+
+
+
+fit <- lm( `Incidence Percent` ~ Rainfall, data = w_graph )
+fit2 <- lm( `Incidence Percent` ~ Rainfall, data = graph )
+
+summary(fit)
+summary(fit2)
+
+
+ggplot(graph, aes(x = Rainfall, y = `Incidence Percent`)) +
+  geom_point() +
+  stat_smooth(method = "lm")+
+  labs(title = "Linear Regression of Incidence Percent and Rainfall",
+       subtitle = "where incedence occured is being predicted in terms of rainfall")
+
+ggplot(graph, aes(x = Max_Temprature, y = `Incidence Percent`)) +
+  geom_point() +
+  stat_smooth(method = "lm")+
+  labs(title = "Linear Regression of Incidence Percent and Average Temperature",
+       subtitle = "where incedence occured is being predicted in terms of average temperature")
+
 
 ```
+
 ```{r}
 
-# rainfall
-ggplotly  (ggplot(rainfall)+
+# overview rainfall
+ggplotly  (ggplot(w_graph)+
   theme_bw() +
   labs(title = "<span style = 'color:blue'> <b>Rainfall</b> </span> vs 
        <span style = 'color:orange'><b>Incidence Rate</b></span> in SA3 Regions.",
@@ -424,9 +427,9 @@ ggplotly  (ggplot(rainfall)+
 
 
 
-# temperature
+# overview temperature
 
-ggplotly  (ggplot(rainfall)+
+ggplotly  (ggplot(w_graph)+
   theme_bw() +
   labs(title = "Average Temperature vs Incidence Rate in SA3 Regions",
        y = " ") + 
@@ -456,6 +459,117 @@ ggplotly  (ggplot(rainfall)+
 
 ```
 
+```{r}
+# data cleaning for weather map
+# color palette
+#cols <- carto.pal(pal1 = "green.pal", n1 = 2, pal2 = "red.pal", n2 = 4)
+
+new_shapefile <- readOGR(dsn = "data/SA3_2011/")
+# attr(new_shapefile, "sf_column")
+
+
+temp_map <- fulldata%>% 
+  group_by(SA3_NAME_2011, Virus_Name) %>% 
+  summarise(Max_temp = round(mean(meanMaxTavg), 2),
+            Min_temp = round(mean(meanMinTavg), 2))
+
+shapefile_temp <- geo_join(new_shapefile, temp_map,
+                             "SA3_NAME11", "SA3_NAME_2011")
+
+    pal_temp <- colorNumeric("RdBu", temp_map$Max_temp, reverse = TRUE)
+    
+    leaflet(shapefile_temp) %>%
+      addPolygons(#data = new_shapefile$geometry,
+                  weight = 1,
+                  fillColor = ~pal_temp(Max_temp),
+                  opacity = 0.5,
+                  color = "white",
+                  fillOpacity = 0.9,
+                  smoothFactor = 0.5) %>%
+         addLegend("topright", pal = pal_temp, 
+                values = ~Max_temp, 
+                opacity = 1, 
+                title = "Average Max_temp") %>% 
+      setMapWidgetStyle(list(background= "#fcf9f2"))
+    
+
+
+#rainfall map
+
+
+#temp map
+```
+
+
+```{r}
+rain_map <- fulldata%>% 
+  group_by(SA3_NAME_2011, Virus_Name) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2))
+
+shapefile_rain <- geo_join(new_shapefile, rain_map,
+                             "SA3_NAME11", "SA3_NAME_2011")
+
+    pal_rain <- colorNumeric("RdBu", rain_map$Rainfall, reverse = TRUE)
+    
+    leaflet(shapefile_rain) %>%
+      addPolygons(#data = new_shapefile$geometry,
+                  weight = 1,
+                  fillColor = ~pal_rain(Rainfall),
+                  opacity = 0.5,
+                  color = "white",
+                  fillOpacity = 0.9,
+                  smoothFactor = 0.5) %>%
+         addLegend("topright", pal = pal_rain, 
+                values = ~Rainfall, 
+                opacity = 1, 
+                title = "Average Rainfall")%>% 
+      setMapWidgetStyle(list(background= "#fcf9f2"))
+```
+
+
+
+
+
+## Extras (graphs for all weather conditions)
+
+```{r}
+
+ggplotly  (ggplot(weather)+
+  theme_bw() +
+  labs(title = "Weather Conditions SA3 Regions",
+       y = " ") +
+  scale_y_continuous(breaks = seq(-10, 100, 10))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+
+  geom_line(aes(x = Year, y = Rainfall), linetype = "dotdash",
+            color = "blue", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Rainfall),
+  #           color = "blue", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=65,
+           label="Rainfall (in mm)", color="blue") +
+
+  geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
+            color = "dark green", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Min_Temprature),
+  #           color = "dark green", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=17,
+           label="Min Temperature (in °C)", color="dark green")+
+
+  geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+            color = "red", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Max_Temprature),
+  #           color = "red", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.9, y=28,
+           label="Max Temperature (in °C)", color="red")+
+
+  geom_line(aes(x = Year, y = `Incidence Percent`),
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`),
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=5,
+           label="Incidence Percent", color="orange") )
+
+```
 
 
 ## Extras (facet bargraph for animation)
