@@ -480,28 +480,28 @@ shinyServer(function(input, output) {
       sa3_region <- unique(fulldata$SA3_NAME_2011)
     }
     ggplotly(ggplot(w_graph)+
-      theme_bw() +
-      labs(title = "Comaparing Temperature and Incidence Percent",
-           y = " ") + 
-      scale_y_continuous(breaks = seq(0, 30, 5))+
-      scale_x_continuous(breaks = c(2007:2020)) +
-      
-      geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
-                color = "dark green", alpha = 0.4, size = 1) +
-      annotate(geom="text", x=2008.9, y=14,
-               label="Min Temperature (in °C)", color="dark green")+
-      
-      geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
-                color = "red", alpha = 0.4, size = 1) +
-      annotate(geom="text", x=2008.9, y=25,
-               label="Max Temperature (in °C)", color="red")+
-      
-      geom_line(aes(x = Year, y = `Incidence Percent`), 
-                color = "orange", alpha = 0.8, size = 1) +
-      geom_point(aes(x = Year, y = `Incidence Percent`), 
-                 color = "orange", alpha = 1, size = 1.5) +
-      annotate(geom="text", x=2008.5, y=10, 
-               label="Incidence Percent", color="orange"))%>%
+               theme_bw() +
+               labs(title = "Comaparing Temperature and Incidence Percent",
+                    y = " ") + 
+               scale_y_continuous(breaks = seq(0, 30, 5))+
+               scale_x_continuous(breaks = c(2007:2020)) +
+               
+               geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
+                         color = "dark green", alpha = 0.4, size = 1) +
+               annotate(geom="text", x=2008.9, y=14,
+                        label="Min Temperature (in °C)", color="dark green")+
+               
+               geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+                         color = "red", alpha = 0.4, size = 1) +
+               annotate(geom="text", x=2008.9, y=25,
+                        label="Max Temperature (in °C)", color="red")+
+               
+               geom_line(aes(x = Year, y = `Incidence Percent`), 
+                         color = "orange", alpha = 0.8, size = 1) +
+               geom_point(aes(x = Year, y = `Incidence Percent`), 
+                          color = "orange", alpha = 1, size = 1.5) +
+               annotate(geom="text", x=2008.5, y=10, 
+                        label="Incidence Percent", color="orange"))%>%
       layout(plot_bgcolor  = "#fcf9f2",
              paper_bgcolor = "#fcf9f2",
              fig_bgcolor   = "#fcf9f2")

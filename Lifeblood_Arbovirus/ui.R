@@ -96,29 +96,29 @@ shinyUI(fluidPage(
                       fluidRow(HTML('<img src="Donation.gif" width="100%" height="auto">'), 
                                setBackgroundColor("#fcf9f2"),
                                
-                        column(width = 5, 
-                               HTML("<br><br><br><h2>Donation Rate by SA3 Region</h2>"),
-                               div(id = "plot-container",
-                                   tags$img(src = "spinner.gif",
-                                            id = "loading-spinner"),
-                                   leafletOutput("dr_map", height = 500)
-                               )),
-                        column(width = 2,
-                               HTML("<br><br><br><br><br><br><br><br>
+                               column(width = 5, 
+                                      HTML("<br><br><br><h2>Donation Rate by SA3 Region</h2>"),
+                                      div(id = "plot-container",
+                                          tags$img(src = "spinner.gif",
+                                                   id = "loading-spinner"),
+                                          leafletOutput("dr_map", height = 500)
+                                      )),
+                               column(width = 2,
+                                      HTML("<br><br><br><br><br><br><br><br>
                                     <br><br><br><br><br><br>"),
-                               sliderInput("date_slider", "Date Range", min = min(full_data$Year), max = max(full_data$Year),
-                                           value = c(2007, 2017), sep = ""),
-                               selectInput("sa3_donation","Select SA3 Region: ",
-                                           unique(full_data$SA3_NAME_2011), multiple = TRUE)
-                        ),
-                        column (width = 5,
-                                HTML("<br><br><br><h2>Donation Rate vs Incidence Rate</h2>"),
-                                div(id = "plot-container",
-                                    tags$img(src = "spinner.gif",
-                                             id = "loading-spinner"),
-                                    plotlyOutput("dr_graph", height = 500)
-                                )
-                        )
+                                      sliderInput("date_slider", "Date Range", min = min(full_data$Year), max = max(full_data$Year),
+                                                  value = c(2007, 2017), sep = ""),
+                                      selectInput("sa3_donation","Select SA3 Region: ",
+                                                  unique(full_data$SA3_NAME_2011), multiple = TRUE)
+                               ),
+                               column (width = 5,
+                                       HTML("<br><br><br><h2>Donation Rate vs Incidence Rate</h2>"),
+                                       div(id = "plot-container",
+                                           tags$img(src = "spinner.gif",
+                                                    id = "loading-spinner"),
+                                           plotlyOutput("dr_graph", height = 500)
+                                       )
+                               )
                       )),
              tabPanel("Weather Conditions",
                       setBackgroundColor("#fcf9f2"),
@@ -142,7 +142,7 @@ shinyUI(fluidPage(
                                             id = "loading-spinner"),
                                    leafletOutput("rainfall_map", height = 500)
                                )),
-                              # rainfall selectors
+                        # rainfall selectors
                         column(width = 2,
                                HTML("<br><br><br><br><br><br><br><br>
                                     <br><br><br><br><br><br>"),
@@ -171,7 +171,7 @@ shinyUI(fluidPage(
                                             id = "loading-spinner"),
                                    plotlyOutput("rainfall_graph", height = 500)
                                ))
-                        ),
+                      ),
                       
                       
                       
@@ -226,7 +226,7 @@ shinyUI(fluidPage(
                                    plotlyOutput("temp_graph", height = 500)
                                ))
                       )
-    
+                      
                       
                       
              )
