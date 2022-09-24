@@ -371,13 +371,7 @@ shinyServer(function(input, output) {
   })
   
   output$rainfall_graph <- renderPlotly({
-    # rainfall map data 
-    if (length(input$sa3_rainfall) != 0){
-      sa3_region <- input$sa3_rainfall
-    } else {
-      sa3_region <- unique(fulldata$SA3_NAME_2011)
-    }
-    ggplotly(ggplot(w_graph)+
+    ggplotly(ggplot(weather_graph)+
                theme_bw() +
                labs(title = "Comaparing Rainfall and Incidence Percent",
                     y = " ") + 
@@ -388,17 +382,12 @@ shinyServer(function(input, output) {
                          color = "blue", alpha = 0.4, size = 1) + 
                annotate(geom="text", x=2008.5, y=65, 
                         label="Rainfall (in mm)", color="blue") +
-               
-               
                geom_line(aes(x = Year, y = `Incidence Percent`), 
                          color = "orange", alpha = 0.8, size = 1) +
                geom_point(aes(x = Year, y = `Incidence Percent`), 
                           color = "orange", alpha = 1, size = 1.5) +
                annotate(geom="text", x=2008.5, y=10, 
-                        label="Incidence Percent", color="orange")) %>%
-      layout(plot_bgcolor  = "#fcf9f2",
-             paper_bgcolor = "#fcf9f2",
-             fig_bgcolor   = "#fcf9f2")
+                        label="Incidence Percent", color="orange")) 
   })
   
   
