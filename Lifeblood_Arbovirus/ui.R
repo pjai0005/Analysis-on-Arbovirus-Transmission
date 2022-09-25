@@ -5,37 +5,7 @@ library(leaflet)
 library(tidyverse)
 library(plotly)
 
-mycss <- "
-#plot-container {
-  position: relative;
-}
-#loading-spinner {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: -1;
-  margin-top: -33px;  /* half of the spinner's height */
-  margin-left: -33px; /* half of the spinner's width */
-}
-#plot.recalculating {
-  z-index: -2;
-}
-"
-
-full_data <- read_csv(file.choose())
-
-ui <- fluidPage(
-  tags$head(tags$style(HTML(mycss))),
-  actionButton("btn", "Plot (takes 2 seconds)"),
-  div(id = "plot-container",
-      tags$img(src = "spinner.gif",
-               id = "loading-spinner"),
-      plotOutput("plot")
-  )
-)
-
 shinyUI(fluidPage(
-  tags$head(tags$style(HTML(mycss))),
   theme = shinytheme("flatly"),
   navbarPage(position = "fixed-top","Arbovirus Transmission",
              tabPanel("Incidence Rate",

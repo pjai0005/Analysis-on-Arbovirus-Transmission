@@ -1,0 +1,48 @@
+---
+title: "Statistical Analysis"
+author: "Sahinya Akila"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+full_data <- read_csv(file.choose())
+```
+
+
+```{r}
+long_data <- full_data %>% pivot_longer(35:54, names_to = "Virus", values_to = "Value")
+```
+
+```{r}
+long_data <- separate(data = long_data, col = Virus, into = c("Virus", "Type"), sep = "\\_")
+```
+
+Yearly and monthly distribution of cases
+
+```{r}
+final_data <- long_data %>% 
+  filter(startsWith(Type, "IR")) %>% 
+  rename(Incidence_Rate = "Value") %>% 
+  select(Humanpop, Rainavg, meanMaxTavg, meanMinTavg, meanRHTMaxavg, meanRHTMinavg, donationrate, Incidence_Rate) %>% 
+  na.omit()
+```
+
+```{r}
+library(GGally)
+ggcorr(final_data, method = c("everything", "pearson"), label = TRUE)
+```
+
+```{r}
+cor(final_data[-8], final_data$Incidence_Rate)
+```
+
+
+A correlation of -1.0 indicates a perfect negative correlation, and a correlation of 1.0 indicates a perfect positive correlation. If the correlation coefficient is greater than zero, it is a positive relationship. Conversely, if the value is less than zero, it is a negative relationship.
+
+
