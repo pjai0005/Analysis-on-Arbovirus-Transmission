@@ -174,14 +174,20 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # Weather conditions
+  
+  ## temperature
+  
+  ### temperature lm overview
   output$Temperature_overview <- renderPlotly({
-    ggplotly(ggplot(weather_data, aes(x = Max_Temprature, y = `Incidence Percent`)) +
+    ggplotly(ggplot(weather_data, aes(x = `Average Temperature`, y = `Incidence Percent`)) +
                geom_point() +
                stat_smooth(method = "lm")+
                theme_bw()+
                labs(title = "Incidence is predicted in terms of temperature"))
   })
   
+  ### temperature map
   output$Temperature_map <- renderUI({
     temperature_map_data <- temperature_map_data %>% filter(Virus_name == input$Temperature_virus)
     if (length(temperature_map_data) != 0){
@@ -217,33 +223,34 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### temperature line graph
   output$Temperature_graph <- renderUI({
     
     ggplotly(ggplot(weather_graph)+
                theme_bw() +
-               labs(title = "Comaparing Temperature and Incidence Percent",
+               labs(title = "Comparing Temperature and Incidence ",
                     y = " ") + 
                scale_y_continuous(breaks = seq(0, 30, 5))+
                scale_x_continuous(breaks = c(2007:2020)) +
                
-               geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
-                         color = "dark green", alpha = 0.4, size = 1) +
-               annotate(geom="text", x=2008.9, y=14,
-                        label="Min Temperature (in °C)", color="dark green")+
-               
-               geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+               geom_line(aes(x = Year, y = `Average Temperature`),
                          color = "red", alpha = 0.4, size = 1) +
-               annotate(geom="text", x=2008.9, y=25,
-                        label="Max Temperature (in °C)", color="red")+
-               
+               geom_point(aes(x = Year, y = `Average Temperature`), 
+                          color = "red", alpha = 1, size = 1.5)+
+               annotate(geom="text", x=2011, y=16,
+                        label="Average Temperature (in °C)", color="red")+
+
                geom_line(aes(x = Year, y = `Incidence Percent`), 
                          color = "orange", alpha = 0.8, size = 1) +
                geom_point(aes(x = Year, y = `Incidence Percent`), 
                           color = "orange", alpha = 1, size = 1.5) +
-               annotate(geom="text", x=2008.5, y=10, 
+               annotate(geom="text", x=2009, y=7, 
                         label="Incidence Percent", color="orange"))
   })
   
+  ## rainfall
+  
+  ### rainfall lm overview
   output$Rainfall_overview <- renderPlotly({
     ggplotly(ggplot(weather_data, aes(x = Rainfall, y = `Incidence Percent`)) +
                geom_point() +
@@ -252,6 +259,7 @@ shinyServer(function(input, output, session) {
                labs(title = "Incidence is predicted in terms of Rainfall"))
   })
   
+  ### rainfall map
   output$Rainfall_map <- renderUI({
     map_data <- rain_map_data %>% filter(Virus_name == input$Rainfall_virus)
     if (length(map_data) != 0){
@@ -287,34 +295,43 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### rainfall graph
   output$Rainfall_graph <- renderUI({
     
     ggplotly(ggplot(weather_graph)+
                theme_bw() +
-               labs(title = "Comaparing Rainfall and Incidence Percent",
+               labs(title = "Comaparing Rainfall and Incidence",
                     y = " ") + 
                scale_x_continuous(breaks = c(2007:2020)) +
                
-               geom_line(aes(x = Year, y = Rainfall), linetype = "twodash",
-                         color = "dark green", alpha = 0.4, size = 1) +
-               annotate(geom="text", x=2008.5, y=65, 
+               geom_line(aes(x = Year, y = Rainfall), 
+                         color = "blue", alpha = 0.4, size = 1) +
+               geom_point(aes(x = Year, y = Rainfall), 
+                          color = "blue", alpha = 1, size = 1.5) +
+               annotate(geom="text", x=2009, y=65, 
                         label="Rainfall (in mm)", color="blue") +
+               
                geom_line(aes(x = Year, y = `Incidence Percent`), 
                          color = "orange", alpha = 0.8, size = 1) +
                geom_point(aes(x = Year, y = `Incidence Percent`), 
                           color = "orange", alpha = 1, size = 1.5) +
-               annotate(geom="text", x=2008.5, y=10, 
+               annotate(geom="text", x=2009, y=10, 
                         label="Incidence Percent", color="orange"))
   })
   
+  
+  ## humidity
+  
+  ### humidity lm overview
   output$Humidity_overview <- renderPlotly({
-    ggplotly(ggplot(weather_data, aes(x = Max_Humidity, y = `Incidence Percent`)) +
+    ggplotly(ggplot(weather_data, aes(x = `Average Humidity`, y = `Incidence Percent`)) +
                geom_point() +
                stat_smooth(method = "lm")+
                theme_bw()+
                labs(title = "Incidence is predicted in terms of Humidity"))
   })
   
+  ### humidity map
   output$Humidity_map <- renderUI({
     humidity_map_data <- humidity_map_data %>% filter(Virus_name == input$Temperature_virus)
     if (length(humidity_map_data) != 0){
@@ -350,29 +367,27 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### humidity line graph
   output$Humidity_graph <- renderUI({
     
     ggplotly(ggplot(weather_graph)+
                theme_bw() +
-               labs(title = "Comaparing Humidity and Incidence Percent",
+               labs(title = "Comaparing Humidity and Incidence ",
                     y = " ") + 
                scale_x_continuous(breaks = c(2007:2020)) +
                
-               geom_line(aes(x = Year, y = Min_Humidity), linetype = "twodash",
+               geom_line(aes(x = Year, y = `Average Humidity`), 
                          color = "dark green", alpha = 0.4, size = 1) +
-               annotate(geom="text", x=2008.9, y=76,
-                        label="Min Humidity", color="dark green")+
-               
-               geom_line(aes(x = Year, y = Max_Humidity), linetype = "twodash",
-                         color = "red", alpha = 0.4, size = 1) +
-               annotate(geom="text", x=2008.9, y=52,
-                        label="Max Humidity", color="red")+
-               
+               geom_point(aes(x = Year, y = `Average Humidity`), 
+                          color = "dark green", alpha = 1, size = 1.5) +
+               annotate(geom="text", x=2009, y=60,
+                        label="Average Humidity", color="dark green")+
+
                geom_line(aes(x = Year, y = `Incidence Percent`), 
                          color = "orange", alpha = 0.8, size = 1) +
                geom_point(aes(x = Year, y = `Incidence Percent`), 
                           color = "orange", alpha = 1, size = 1.5) +
-               annotate(geom="text", x=2008.5, y=10, 
+               annotate(geom="text", x=2009, y=10, 
                         label="Incidence Percent", color="orange"))
   })
 })
