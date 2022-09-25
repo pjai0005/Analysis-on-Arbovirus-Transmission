@@ -101,8 +101,7 @@ shinyUI(fluidPage(
                                             id = "loading-spinner"),
                                    plotlyOutput("rain_overview", height = 500)
                                )),
-                        
-                        column(width = 3)),
+                        column(width = 5, 
                       
                       fluidRow(# rainfall map
                         column(width = 5, 
@@ -202,4 +201,4 @@ shinyUI(fluidPage(
              )
   )
 )
-)
+)))
