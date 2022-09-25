@@ -15,9 +15,9 @@ world_df <- readOGR(
          wlong = long,
          wname = id)
 
-full_data <- read_csv("../../Data/fulldata.csv")# read_csv(file.choose())
+full_data <- read_csv(file.choose())
 
-imported <-  "../../Data/dataset IMP viruses.xlsx"# file.choose()
+imported <-  file.choose()
 
 # List of viruses
 virus_list <-  c("Dengue", "West_Nile_Kunjin", "Zika", "Chikungunya", "Japanese_Encephalitis_Virus")
