@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = FALSE,
 ```
 
 ```{r}
+#install.packages("countreg", repos="http://R-Forge.R-project.org")
+library(countreg)
 library(tidyverse)
 library(dplyr)
 library(kableExtra)
@@ -25,6 +27,8 @@ library(summarytools)
 library(stargazer)
 library(GGally)
 library(plot3D)
+library(ggbreak)
+
 
 ```
 
@@ -42,9 +46,22 @@ Yearly and monthly distribution of cases
 ```{r}
 final_data <- long_data %>% 
   dplyr::filter(startsWith(Type, "IR")) %>% 
-  rename(Incidence_Rate = "Value") %>% 
-  dplyr::select(Humanpop, Rainavg, meanMaxTavg, meanMinTavg, meanRHTMaxavg, meanRHTMinavg, donationrate, Incidence_Rate) %>% 
-  na.omit()
+  rename(Incidence_Rate = "Value") %>%   
+  dplyr::select(Humanpop, Rainavg, meanMaxTavg, meanMinTavg, meanRHTMaxavg,
+                meanRHTMinavg, donationrate, Incidence_Rate) %>% 
+  na.omit() 
+  
+
+
+  final_dat <- data.frame(Population = final_data$Humanpop,
+                          Rainfall = final_data$Rainavg,
+                          Temperature = (final_data$meanMaxTavg + final_data$meanMinTavg)/2,
+                          Humidity = (final_data$meanRHTMinavg + final_data$meanRHTMaxavg)/2,
+                          Donation_Rate = final_data$donationrate,
+                          Incidence_Rate = final_data$Incidence_Rate)
+    
+
+
 ```
 
 ```{r}
@@ -53,9 +70,379 @@ ggcorr(final_data, method = c("everything", "pearson"), label = TRUE)
 
 ```{r}
 cor(final_data[-8], final_data$Incidence_Rate)%>%
+  kbl(caption = "Summary of PCA data") %>%
+  kable_classic(full_width = FALSE, html_font = "Helvetica")
+
+cor(final_dat[-8], final_dat$Incidence_Rate)%>%
+  kbl(caption = "Summary of PCA data") %>%
   kable_classic(full_width = FALSE, html_font = "Helvetica")
 ```
 
 
 A correlation of -1.0 indicates a perfect negative correlation, and a correlation of 1.0 indicates a perfect positive correlation. If the correlation coefficient is greater than zero, it is a positive relationship. Conversely, if the value is less than zero, it is a negative relationship.
+
+
+
+
+```{r}
+final_data_ir <- long_data %>% 
+  filter(str_detect(Type, "IR")) %>% 
+  group_by(SA4_NAME_2011) %>% 
+  summarise(Population = median(Humanpop),
+            Rainfall = median(Rainavg),
+            Temperature = median((meanMaxTavg + meanMinTavg)/2),
+            Humidity = median((meanRHTMinavg + meanRHTMaxavg)/2),
+            Donation = median(donationrate, na.rm = TRUE)*100,
+            Value = mean(Value, na.rm = TRUE)) %>% 
+  rename(SA4 = SA4_NAME_2011)  
+
+final_data_count <- long_data %>% 
+  filter(str_detect(Type, "Count")) %>% 
+  group_by(SA4_NAME_2011) %>% 
+  summarise(Population = median(Humanpop),
+            Rainfall = median(Rainavg),
+            Temperature = median((meanMaxTavg + meanMinTavg)/2),
+            Humidity = median((meanRHTMinavg + meanRHTMaxavg)/2),
+            Donation = median(donationrate, na.rm = TRUE)*100,
+            Value = median(Value, na.rm = TRUE)) 
+
+```
+
+# PCA
+
+```{r}
+clean <- final_data_ir %>% 
+  mutate(SA4 = as.numeric(as.factor(final_data_ir$SA4)))
+
+
+pca_data <- clean %>% 
+  column_to_rownames('SA4') %>%  # sets column 'State' to row names
+  prcomp(scale.=TRUE)
+  #princomp(scores=TRUE, cor=TRUE)
+
+
+summary(pca_data)$importance %>%
+  kbl(caption = "Summary of PCA data") %>%
+  kable_classic(full_width = FALSE, html_font = "Helvetica")
+
+```
+
+```{r}
+screeplot(pca_data, type = 'line')
+
+#biplot(pca_data,scale=0) # correlation
+
+biplot(pca_data,scale=1) # distance
+```
+
+# Clusters
+
+```{r}
+
+
+clean %>% 
+scale%>% #scale data
+dist(method = 'manhattan')->d #compute distance matrix 
+
+hclust(d,method='ward.D2')->hcl
+plot(hcl)
+```
+
+
+```{r}
+df <- scale(clean)
+clust <- function(p, n, t) 
+  {
+  k <- kmeans(df, centers = n, nstart = 25,
+       algorithm = "Lloyd", trace=FALSE)
+  p <- fviz_cluster(k, geom = "point", data = df) + ggtitle(t) +
+    labs(x = "Dimension 1",
+         y = "Dimension 2")
+  return(p)
+}
+
+p2 <-  clust(p2, 2, "K= 2")
+p3 <-  clust(p2, 3, "K= 3")
+
+grid.arrange(p2, p3, nrow = 1, ncol = 2)
+```
+
+# Negative bionomial
+
+```{r}
+
+nb_data <- long_data %>% 
+  filter(str_detect(Type, "IR")) %>% 
+  dplyr::select(Humanpop, donationrate, Value) %>% 
+  rename(Donation  = donationrate,
+         Population = Humanpop) %>% 
+  mutate(Donation = as.integer(Donation),
+         Population = as.integer(Population),
+         Value = as.integer(Value))
+
+
+paste("Mean of IR", round(mean(nb_data$Value), 4))
+paste("Variance of IR", round(var(nb_data$Value), 4))
+
+paste("Variance Ratio", round(var(nb_data$Value) / mean(nb_data$Value), 4)) 
+
+```
+
+
+# Summary stats
+```{r}
+negb1 <- glm.nb(Value ~ Donation , data = nb_data)
+
+negb <- glm.nb(Value ~ Donation+Population , data = nb_data)
+
+pois <- glm(Value ~ Donation+Population , "poisson", data = nb_data) 
+
+
+summary(negb1)
+summary(pois)
+summary(negb) # has lower AIC therefore better model
+
+```
+
+
+AIC: The Akaike information criterion (AIC) is an information-theoretic measure that describes the quality of a model. A model with a low AIC is characterized by low complexity and a good fit.
+
+Median: Since the median deviance residual is close to zero, this means that our model is not biased in one direction (i.e. the out come is neither over- nor underestimated).
+
+Coefficients: 
+
+Dispersion Parameter: or Theta simply indicates whether a distribution is wide or narrow. The GLM function can use a dispersion parameter to model the variability. 
+
+Null deviance: A low null deviance implies that the data can be modeled well merely using the intercept. If the null deviance is low, you should consider using few features for modeling the data. if the null deviance is high, which means it makes sense to use more than a single parameter for fitting the model. 
+
+Residual deviance: A low residual deviance implies that the model you have trained is appropriate. 
+
+Degree of freedom: However, for a well-fitting model, the residual deviance should be close to the degrees of freedom (74), which is not the case here. For example, this could be a result of over dispersion where the variation is greater than predicted by the model. 
+
+# Zero Inflated Count Data Regression
+
+```{r}
+
+ggplot(nb_data, aes(x = Value))+
+  geom_histogram(bins = 30, color = "dark blue", fill = "steel blue")+ 
+    scale_x_continuous(breaks = seq(0, 35, by = 5))+
+    scale_y_break(c(490, 1e+05), scales = 0.5)+
+  theme_bw()+
+  labs(title = "Histogram of the data", x = "Incidence Rate",
+       subtitle = "to check for Zero Inflated Count Regression")
+
+zinb <- zeroinfl(nb_data$Value ~ nb_data$Donation, link = "logit",
+                 dist = "negbin", data = nb_data)
+
+summary(zinb)
+
+```
+
+# Conclusion stats
+
+```{r}
+
+AIC(negb, zinb, negb1, pois)
+
+
+paste("Dispersion Parameter", negb$theta) 
+
+
+paste("Null Deviance", negb$null.deviance) 
+
+
+paste("Residual Deviance", negb$deviance) 
+
+
+paste("Degree of Freedom", negb$df.residual) 
+
+
+countreg::rootogram(negb)
+```
+
+
+
+
+## 3d lm for donation rate
+
+```{r}
+don_3d <- long_data %>% 
+  filter(str_detect(Type, "IR")) %>% 
+  group_by(Year) %>% 
+  summarise(Population = round(mean(Humanpop), 2),
+            `Incidence Percent` = round(mean(Value, na.rm = TRUE), 2)*100,
+            `Donation Percent` = round(mean(donationrate, na.rm = TRUE), 5)*100) %>% 
+  mutate(Year = as.factor(Year))
+
+```
+
+
+```{r}
+# Donation Percent
+
+x <- don_3d$Population
+y <- don_3d$`Donation Percent`
+z <- don_3d$`Incidence Percent`
+
+# Compute the linear regression 
+fit <- lm(z ~ x + y)
+
+
+# create the fitted points for droplines to the surface
+fitpoints <- predict(fit)
+
+
+# regression plane: create a grid from the x and y values (min to max) and predict values for every point
+grid.lines = 40
+x.pred <- seq(min(x), max(x), length.out = grid.lines)
+y.pred <- seq(min(y), max(y), length.out = grid.lines)
+xy <- expand.grid( x = x.pred, y = y.pred)
+z.pred <- matrix(predict(fit, newdata = xy), 
+                 nrow = grid.lines, ncol = grid.lines)
+
+
+# scatter plot with regression plane
+scatter3D(x, y, z, pch = 16, cex = 1, col="red", 
+          theta = -61, phi = -22, bty="g", label=TRUE,
+          
+          xlab = "Population", ylab = "Donation Percent", zlab = "Incidence Percent", 
+          
+          surf = list(x = x.pred, y = y.pred, z = z.pred,  
+                      facets = TRUE, fit = fitpoints, border="steel blue"), 
+          
+          main = "Incidence and Blood Donation over the years")
+
+
+```
+
+
+# Extras
+
+## 3d plots for weather
+
+```{r}
+weather_data_3d <- long_data %>% 
+  filter(str_detect(Type, "IR")) %>% 
+  group_by(Year) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2),
+            Min_Temprature = round(mean(meanMinTavg), 2),
+            Max_Temprature = round(mean(meanMaxTavg), 2),
+            Min_Humidity = round(mean(meanRHTMinavg), 2),
+            Max_Humidity = round(mean(meanRHTMaxavg), 2),
+            `Average Humidity` = round((Min_Humidity+Max_Humidity)/2, 2),
+            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
+            `Incidence Percent` = round(mean(Value, na.rm = TRUE), 2)*100,
+            `Donation Percent` = round(mean(donationrate, na.rm = TRUE), 5)*100)
+
+
+```
+
+
+```{r}
+# rainfall
+
+x <- weather_data_3d$Year
+y <- weather_data_3d$Rainfall
+z <- weather_data_3d$`Incidence Percent`
+
+# Compute the linear regression 
+fit <- lm(z ~ x + y)
+
+# create a grid from the x and y values (min to max) and predict values for every point
+# this will become the regression plane
+grid.lines = 40
+x.pred <- seq(min(x), max(x), length.out = grid.lines)
+y.pred <- seq(min(y), max(y), length.out = grid.lines)
+xy <- expand.grid( x = x.pred, y = y.pred)
+z.pred <- matrix(predict(fit, newdata = xy), 
+                 nrow = grid.lines, ncol = grid.lines)
+
+# create the fitted points for droplines to the surface
+fitpoints <- predict(fit)
+
+# scatter plot with regression plane
+scatter3D(x, y, z, pch = 19, cex = 1,colvar = NULL, col="red", 
+          theta = 21, phi = -17, bty="b",
+          xlab = "Year", ylab = "Rainfall", zlab = "Incidence Percent",  
+          surf = list(x = x.pred, y = y.pred, z = z.pred,  
+                      facets = TRUE, fit = fitpoints, col=ramp.col (col = c("dodgerblue3","seagreen2"), n = 300, alpha=0.9), border="black"), main = "Incidence caused by rainfall over the years")
+
+
+```
+
+
+```{r}
+
+# Humidity
+
+x <- weather_data_3d$Year
+y <- weather_data_3d$`Average Humidity`
+z <- weather_data_3d$`Incidence Percent`
+
+# Compute the linear regression 
+fit <- lm(z ~ x + y)
+
+# create a grid from the x and y values (min to max) and predict values for every point
+# this will become the regression plane
+grid.lines = 40
+x.pred <- seq(min(x), max(x), length.out = grid.lines)
+y.pred <- seq(min(y), max(y), length.out = grid.lines)
+xy <- expand.grid( x = x.pred, y = y.pred)
+z.pred <- matrix(predict(fit, newdata = xy), 
+                 nrow = grid.lines, ncol = grid.lines)
+
+# create the fitted points for droplines to the surface
+fitpoints <- predict(fit)
+
+# scatter plot with regression plane
+scatter3D(x, y, z, pch = 19, cex = 1,colvar = NULL, col="red", 
+          theta = 33, phi =-6, bty="b",
+          xlab = "Year", ylab = "Average Humidity", zlab = "Incidence Percent",  
+          surf = list(x = x.pred, y = y.pred, z = z.pred,  
+                      facets = TRUE, fit = fitpoints, col=ramp.col (col = c("dodgerblue3","seagreen2"), n = 300, alpha=0.9), border="black"), main = "Incidence caused by humidity over the years")
+
+
+```
+
+
+
+```{r}
+
+# Temperature
+
+x <- weather_data_3d$Year
+y <- weather_data_3d$`Average Temperature`
+z <- weather_data_3d$`Incidence Percent`
+
+# Compute the linear regression 
+fit <- lm(z ~ x + y)
+
+# create a grid from the x and y values (min to max) and predict values for every point
+# this will become the regression plane
+grid.lines = 40
+x.pred <- seq(min(x), max(x), length.out = grid.lines)
+y.pred <- seq(min(y), max(y), length.out = grid.lines)
+xy <- expand.grid( x = x.pred, y = y.pred)
+z.pred <- matrix(predict(fit, newdata = xy), 
+                 nrow = grid.lines, ncol = grid.lines)
+
+# create the fitted points for droplines to the surface
+fitpoints <- predict(fit)
+
+# scatter plot with regression plane
+scatter3D(x, y, z, pch = 19, cex = 1,colvar = NULL, col="red", 
+          theta = 25, phi = 13, bty="b",
+          xlab = "Year", ylab = "Average Temperature", zlab = "Incidence Percent",  
+          surf = list(x = x.pred, y = y.pred, z = z.pred,  
+                      facets = TRUE, fit = fitpoints, col=ramp.col (col = c("dodgerblue3","seagreen2"), n = 300, alpha=0.9), border="black"), main = "Incidence caused by temperature over the years")
+
+
+```
+
+
+
+
+
+
+
 
