@@ -128,8 +128,9 @@ shinyServer(function(input, output, session) {
           scale_color_manual(values=c("#851e3e", "#009688")) +
           theme_light() +
           theme(legend.position="none")
-        
-        ggplotly(plot)
+          
+        ggplotly(plot)%>%
+          config(displayModeBar = FALSE)
       })
     } else {
       renderImage(
@@ -184,7 +185,8 @@ shinyServer(function(input, output, session) {
                geom_point() +
                stat_smooth(method = "lm")+
                theme_bw()+
-               labs(title = "Incidence is predicted in terms of temperature"))
+               labs(title = "Incidence is predicted in terms of temperature"))%>%
+      config(displayModeBar = FALSE)
   })
   
   ### temperature map
