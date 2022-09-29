@@ -172,36 +172,47 @@ grid.arrange(p2, p3, nrow = 1, ncol = 2)
 ```{r}
 
 nb_data <- long_data %>% 
-  filter(str_detect(Type, "IR")) %>% 
-  dplyr::select(Humanpop, donationrate, Value) %>% 
-  rename(Donation  = donationrate,
-         Population = Humanpop) %>% 
-  mutate(Donation = as.integer(Donation),
-         Population = as.integer(Population),
-         Value = as.integer(Value))
+  filter(str_detect(Type, "IR")) 
 
 
-paste("Mean of IR", round(mean(nb_data$Value), 4))
-paste("Variance of IR", round(var(nb_data$Value), 4))
+nb_data <- data.frame(Year = as.integer(nb_data$Year),
+                      Rainfall = as.integer(nb_data$Rainavg),
+                      Temperature = (as.integer(nb_data$meanMaxTavg + nb_data$meanMinTavg)/2),
+                      Humidity = as.integer((nb_data$meanRHTMinavg + nb_data$meanRHTMaxavg)/2),
+                      Donation = as.integer(nb_data$donationrate),
+                      Value = as.integer(nb_data$Value))
 
-paste("Variance Ratio", round(var(nb_data$Value) / mean(nb_data$Value), 4)) 
+# setting NA to 0
+nb_data[is.na(nb_data)] <- 0 
+
+
+
+paste("Mean of IR", round(mean(nb_data$Donation), 4))
+paste("Variance of IR", round(var(nb_data$Donation), 4))
+
+paste("Variance Ratio", round(var(nb_data$Donation) / mean(nb_data$Value), 4)) 
 
 ```
 
 
 # Summary stats
 ```{r}
-negb1 <- glm.nb(Value ~ Donation , data = nb_data)
 
-negb <- glm.nb(Value ~ Donation+Population , data = nb_data)
+pois <- glm(Donation ~ Value , "poisson", data = nb_data) 
 
-pois <- glm(Value ~ Donation+Population , "poisson", data = nb_data) 
+negb <- glm.nb(Donation ~ Value , data = nb_data)
+
+negb_weather <- glm.nb(Donation ~ Value+Temperature+Humidity+Rainfall, data = nb_data)
+
+negb_all <- glm.nb(Donation ~ ., data = nb_data)
 
 
-summary(negb1)
 summary(pois)
-summary(negb) # has lower AIC therefore better model
+summary(negb)
+summary(negb_weather)
+summary(negb_all)# has lower AIC therefore better model
 
+AIC(pois, negb, negb_all, negb_weather)
 ```
 
 
@@ -217,21 +228,21 @@ Null deviance: A low null deviance implies that the data can be modeled well mer
 
 Residual deviance: A low residual deviance implies that the model you have trained is appropriate. 
 
-Degree of freedom: However, for a well-fitting model, the residual deviance should be close to the degrees of freedom (74), which is not the case here. For example, this could be a result of over dispersion where the variation is greater than predicted by the model. 
+Degree of freedom: For a well-fitting model, the residual deviance should be close to the degrees of freedom, which is not the case here. For example, this could be a result of over dispersion where the variation is greater than predicted by the model. 
 
 # Zero Inflated Count Data Regression
 
 ```{r}
 
-ggplot(nb_data, aes(x = Value))+
-  geom_histogram(bins = 30, color = "dark blue", fill = "steel blue")+ 
-    scale_x_continuous(breaks = seq(0, 35, by = 5))+
-    scale_y_break(c(490, 1e+05), scales = 0.5)+
+ggplot(nb_data, aes(x = Donation))+
+  geom_histogram(bins = 10, color = "dark blue", fill = "steel blue")+ 
+    scale_x_continuous(breaks = seq(0, 35, by = 1))+
+    scale_y_break(c(39, 1e+05), scales = 0.5)+
   theme_bw()+
   labs(title = "Histogram of the data", x = "Incidence Rate",
        subtitle = "to check for Zero Inflated Count Regression")
 
-zinb <- zeroinfl(nb_data$Value ~ nb_data$Donation, link = "logit",
+zinb <- zeroinfl(Donation ~ ., link = "logit",
                  dist = "negbin", data = nb_data)
 
 summary(zinb)
@@ -242,22 +253,22 @@ summary(zinb)
 
 ```{r}
 
-AIC(negb, zinb, negb1, pois)
+AIC(zinb, negb_all, negb_weather, negb, pois)
 
 
-paste("Dispersion Parameter", negb$theta) 
+paste("Dispersion Parameter", negb_all$theta) 
 
 
-paste("Null Deviance", negb$null.deviance) 
+paste("Null Deviance", negb_all$null.deviance) 
 
 
-paste("Residual Deviance", negb$deviance) 
+paste("Residual Deviance", negb_all$deviance) 
 
 
-paste("Degree of Freedom", negb$df.residual) 
+paste("Degree of Freedom", negb_all$df.residual) 
 
 
-countreg::rootogram(negb)
+countreg::rootogram(negb_all)
 ```
 
 
