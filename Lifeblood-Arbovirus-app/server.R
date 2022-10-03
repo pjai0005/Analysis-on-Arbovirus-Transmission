@@ -125,6 +125,7 @@ shinyServer(function(input, output, session) {
         plot <- plot %>%
           ggplot(aes(x = Year, y = count, color = type)) +
           geom_line() +
+          geom_point()+
           scale_color_manual(values=c("#851e3e", "#009688")) +
           theme_light() +
           theme(legend.position="none")
@@ -247,7 +248,8 @@ shinyServer(function(input, output, session) {
                geom_point(aes(x = Year, y = `Incidence Percent`), 
                           color = "orange", alpha = 1, size = 1.5) +
                annotate(geom="text", x=2009, y=7, 
-                        label="Incidence Percent", color="orange"))
+                        label="Incidence Percent", color="orange"))%>%
+      config(displayModeBar = FALSE)
   })
   
   ## rainfall
@@ -258,7 +260,8 @@ shinyServer(function(input, output, session) {
                geom_point() +
                stat_smooth(method = "lm")+
                theme_bw()+
-               labs(title = "Incidence is predicted in terms of Rainfall"))
+               labs(title = "Incidence is predicted in terms of Rainfall"))%>%
+      config(displayModeBar = FALSE)
   })
   
   ### rainfall map
@@ -318,7 +321,8 @@ shinyServer(function(input, output, session) {
                geom_point(aes(x = Year, y = `Incidence Percent`), 
                           color = "orange", alpha = 1, size = 1.5) +
                annotate(geom="text", x=2009, y=10, 
-                        label="Incidence Percent", color="orange"))
+                        label="Incidence Percent", color="orange"))%>%
+      config(displayModeBar = FALSE)
   })
   
   
@@ -330,7 +334,8 @@ shinyServer(function(input, output, session) {
                geom_point() +
                stat_smooth(method = "lm")+
                theme_bw()+
-               labs(title = "Incidence is predicted in terms of Humidity"))
+               labs(title = "Incidence is predicted in terms of Humidity"))%>%
+      config(displayModeBar = FALSE)
   })
   
   ### humidity map
@@ -390,6 +395,7 @@ shinyServer(function(input, output, session) {
                geom_point(aes(x = Year, y = `Incidence Percent`), 
                           color = "orange", alpha = 1, size = 1.5) +
                annotate(geom="text", x=2009, y=10, 
-                        label="Incidence Percent", color="orange"))
+                        label="Incidence Percent", color="orange"))%>%
+      config(displayModeBar = FALSE)
   })
 })
