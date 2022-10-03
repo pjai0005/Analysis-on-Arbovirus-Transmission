@@ -129,15 +129,13 @@ group_by(SA3_NAME_2011, Virus_name) %>%
 
 weather_graph <- full_data%>% 
   filter(str_detect(Type, "IR")) %>% 
-  group_by(Year) %>% 
+  group_by(Year, Virus_name) %>% 
   summarise(Rainfall = round(mean(Rainavg), 2),
-            Min_Temprature = round(mean(meanMinTavg), 2),
-            Max_Temprature = round(mean(meanMaxTavg), 2),
-            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
-            Max_Humidity = round(mean(meanRHTMaxavg), 2),
-            Min_Humidity = round(mean(meanRHTMinavg), 2),
-            `Average Humidity` = round((Max_Humidity+Min_Humidity)/2, 2),
-            `Incidence Percent` = round(mean(Value, na.rm = TRUE), 2)*100)
+            `Average Temperature` = round((mean(meanMinTavg)+mean(meanMaxTavg))/2, 2),
+            `Average Humidity` = round((mean(meanRHTMaxavg)+mean(meanRHTMinavg))/2, 2),
+            `Incidence Percent` = round(mean(Value, na.rm = TRUE), 2)*100) %>% 
+  pivot_longer(cols = -c('Year', 'Virus_name'), 
+               names_to = "Type", values_to = "Value")
 
 rain_map_data <- full_data %>% 
   group_by(SA3_NAME_2011, Virus_name) %>% 

@@ -1,0 +1,815 @@
+---
+title: "Connection Map"
+author: "Sahinya Akila, Prachi Jaiswal"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r libraries}
+library(tidyverse)
+library(ggplot2)
+library(sf)
+library(broom)
+library(readxl)
+library(rgdal)
+library(themis)
+library(leaflet)
+library(openxlsx)
+library(geosphere)
+library(readr)
+library(RColorBrewer)
+library(plotly)
+library(gganimate)
+library(tigris)
+```
+
+
+```{r read_data}
+
+# SA3 Shape File
+shapefile_df <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))%>%  
+  fortify(region = "SA3_NAME11") %>% 
+  rename(alat = lat,
+         along = long,
+         aname = id) 
+new_shapefile <-  st_read(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>% st_geometry(shapefile_df) %>% 
+  fortify(region = "SA3_NAME11")
+
+# World Data Shape File
+world_df <- readOGR( 
+  dsn= paste0(getwd(),"/DATA/World_Shapefile/") , 
+  layer="TM_WORLD_BORDERS_SIMPL-0.3",
+  verbose=FALSE) %>% fortify(region = "NAME") %>% 
+  rename(wlat = lat,
+         wlong = long,
+         wname = id)
+```
+
+
+```{r, cleaning}
+
+sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
+  select(SA3_NAME11)
+
+
+shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>%  fortify(shapefile)
+
+# ggplot() +
+# geom_path(data = shapefile_df, 
+#           aes(x = long, y = lat, group = group),
+#           color = 'black', fill = 'white', size = .2)
+# joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
+# joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
+
+```
+
+## Connection map
+
+```{r, connection_map}
+imported <- file.choose()
+
+virus_list <-  c("Dengue", 
+                   "West_Nile_Kunjin", 
+                   "Zika", 
+                   "Chikungunya",
+                   "Japanese_Encephalitis_Virus")
+  
+connection_data <- data.frame()
+  
+for(i in 1:5)
+  {
+    connection_data <- rbind(connection_data, read_excel(imported, sheet = i) %>%
+                        add_column(Virus = virus_list[i]))
+  }
+
+
+ connection_data <- connection_data %>% 
+   filter(!`Country of Origin` %in% c("No data available", "Overseas - Country unknown", 
+                                      "At Sea", "Unknown", "No data supplied", "Australia") &
+            !`Residential location (SA3)` %in% c("No data available", "Overseas - Country unknown", 
+                                      "At Sea", "No data supplied", "Unknown")) %>% 
+   mutate(`Country of Origin` = 
+      ifelse(`Country of Origin` =="China (excludes SARs and Taiwan)", "China",
+      ifelse(`Country of Origin` == "Venezuela, Bolivarian Republic of", "Venezuela",
+      ifelse(`Country of Origin` == "Samoa, American", "Samoa",
+      ifelse(`Country of Origin` == "Bolivia, Plurinational State of", "Bolivia",
+      ifelse(`Country of Origin` == "Congo, Democratic Republic of", "Congo",
+      ifelse(`Country of Origin` == "Macau (SAR of China)", "Macau",
+      ifelse(`Country of Origin` == "United Kingdom, Channel Islands and Isle of Man", "United Kingdom",
+      ifelse(`Country of Origin` == "Hong Kong (SAR of China)", "Hong Kong",
+      ifelse(`Country of Origin` == "Congo, Republic of", "Congo", 
+      ifelse(`Country of Origin` == "Myanmar, The Republic of the Union of", "Myanmar", `Country of Origin`)))))))))))
+ 
+ connection_data <- connection_data[!grepl("nfd|nec", connection_data$`Country of Origin`),] 
+
+
+```
+
+```{r map}
+
+# # Binding shape files
+# joint_data <- rbind(world_df, shapefile_df)
+# 
+# ggplot() +
+# geom_path(data = joint_data,
+#           aes(x = long, y = lat, group = group),
+#           color = 'Dark Green', size = .2)
+
+
+final_map_data <- connection_data %>% 
+  group_by(Virus, `Country of Origin`) %>% 
+  summarise(count = sum(Count)) %>% 
+  inner_join(. , world_df, by=c("Country of Origin"="wname"))%>% 
+  group_by(Virus, `Country of Origin`) %>% 
+  summarise(wlat = mean(wlat),
+            wlong = mean(wlong),
+            count  = mean(count)) %>% 
+  rename(wname = "Country of Origin") %>% 
+  filter(Virus == "Zika")  
+  
+content <- paste(sep = "<br/>",
+  "Virus Imported from: ", "<b>", final_map_data$wname, "</b>",
+  "Type of Virus: ",  "<b>", final_map_data$`Virus`, "</b>",
+  "Total Imported Cases: ", "<b>", final_map_data$`count`, "</b>")
+
+
+connection_map <- leaflet() %>%
+  addProviderTiles(providers$Esri.WorldStreetMap) %>% 
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             labelOptions = labelOptions(noHide = T))
+
+for (i in 1:nrow(final_map_data)){
+  connection_map <- connection_map %>% 
+    addPolylines(lng = c(final_map_data$wlong[i],137),
+               lat = c(final_map_data$wlat[i],-23.2), weight=1.5, opacity=2, color="pink")
+}
+
+connection_map %>%  setView(0, 0, zoom = 1.4) 
+
+  
+
+```
+
+
+## Animation of IR
+
+```{r}
+
+
+full_data <- read_csv(file.choose())
+
+# cleaning full data
+
+fulldata <- full_data %>% 
+  pivot_longer(cols = c("BFV_CountLA" : "CHIKV_CountIMP"), #BFV_CountLA to CHIKV_CountIMP
+               names_to = "Virus",
+               values_to = "Value") 
+
+# Count local or imported
+fulldata$Commute_Count <- ifelse(grepl("_CountLA",fulldata$Virus),'local_count',
+                           ifelse(grepl("_CountIMP",fulldata$Virus),'imp_count','na'))
+
+# IR local or imported
+fulldata$Commute_IR <- 
+                                  ifelse(grepl("_IRIMP",fulldata$Virus),'imp_IR',
+                                         ifelse(grepl("_IRLA",fulldata$Virus),'local_IR','na'))
+
+
+# transmission local or imported
+fulldata$Transmission <- 
+                                  ifelse(grepl("local_IR",fulldata$Commute_IR) | 
+                                           grepl("local_count",fulldata$Commute_Count) ,'Local',
+                                         
+       ifelse(grepl("imp_IR",fulldata$Commute_IR) | 
+                grepl("imp_count",fulldata$Commute_Count),'Imported','na'))
+
+
+
+# virus names
+fulldata$Virus_Name <- 
+                                  ifelse(grepl("BFV_",fulldata$Virus),'BFV',
+                                         ifelse(grepl("RRV_",fulldata$Virus),'RRV',
+                                                ifelse(grepl("DENV_",fulldata$Virus),'DENV',
+                                                       ifelse(grepl("ZIKV_",fulldata$Virus),'ZIKV',
+                                                              ifelse(grepl("MVEV_",fulldata$Virus),'MVEV',
+                                                ifelse(grepl("JEV_",fulldata$Virus),'JEV',
+                                                       ifelse(grepl("WNV_",fulldata$Virus),'WNV',
+                                         ifelse(grepl("CHIKV_",fulldata$Virus),'CHIKV','na'))))))))
+
+  
+```
+
+```{r}
+# data wrangling cleaned data for animation
+animation <- fulldata %>% 
+  pivot_wider(names_from = c(Commute_Count, Commute_IR) ,
+              values_from = Value) %>% 
+  
+  pivot_longer(cols = c(local_count_na, imp_count_na),
+               names_to = "Count_Type",
+               values_to = "Count")%>% 
+  
+  pivot_longer(cols = c(na_local_IR, na_imp_IR),
+               names_to = "IR_Type",
+               values_to = "IR") %>% 
+  select(Year, Virus_Name, Transmission, IR, Count) %>% 
+  group_by(Year, Transmission, Virus_Name ) %>% 
+  summarise(IR = sum(IR, na.rm = TRUE),
+            Count = sum(Count, na.rm = TRUE)) %>% 
+  as.data.frame()
+
+# animation for imported virus
+animation_imp <- animation %>% 
+  filter(Transmission == "Imported") %>% 
+  group_by(Year) %>%
+  
+  mutate(rank = rank(-IR),
+         IR_rel =  round(IR/IR[rank==1], 2),
+         IR_lbl = round(IR, 2)) %>%
+  group_by(Virus_Name) %>% ungroup()
+
+
+# animation for local virus
+animation_local <- animation %>% 
+  filter(Transmission == "Local") %>% 
+  group_by(Year) %>%
+  
+  mutate(rank = rank(-IR),
+         IR_rel = round(IR/IR[rank==1], 2),
+         IR_lbl = round(IR, 2)) %>%
+  group_by(Virus_Name) %>% 
+  ungroup()
+```
+
+```{r}
+# animation for local virus
+p.local <- ggplot(animation_local, aes(rank, group = Virus_Name,
+                               fill = as.factor(Virus_Name), 
+                            color = as.factor(Virus_Name))) +
+  geom_tile(aes(y = IR/2,
+                height = IR,
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 6) +
+  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 6) +
+  coord_flip(clip = "off", expand = FALSE)+   
+  scale_fill_brewer(palette = "Dark2") +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none",
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(size = 0.1, color = "black"),
+        panel.grid.minor.x = element_line(size = 0.1, color = "black"),
+        plot.title = element_text(size = 30),
+        plot.subtitle = element_text(size=18, face = "italic", 
+                                     color = "black",  hjust = 0.5, vjust = -1),
+        plot.background = element_blank(),
+        plot.margin = margin(4, 4, 4, 4, "cm"))+   
+        scale_colour_brewer(palette = "Dark2")
+
+anim_local <- p.local + 
+  transition_states(Year, transition_length = 1, state_length = 1) +
+  view_follow(fixed_x = FALSE)  +
+  labs(title = 'Local Viruses in: {closest_state}',  
+       subtitle  = " ")
+
+
+animate(anim_local, 100, fps = 5,  width = 1200, height = 1000, 
+        renderer = gifski_renderer("Animation/gganim_local.gif"))
+
+```
+
+```{r}
+#animation for imported virus
+p.imp <- ggplot(animation_imp, aes(rank, group = Virus_Name,
+                               fill = as.factor(Virus_Name), 
+                            color = as.factor(Virus_Name))) +
+  geom_tile(aes(y = IR/2,
+                height = IR,
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 6) +
+  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 6) +
+  coord_flip(clip = "off", expand = FALSE)+   
+  scale_fill_brewer(palette = "Dark2") +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.position = "none",
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(size = 0.1, color = "black"),
+        panel.grid.minor.x = element_line(size = 0.1, color = "black"),
+        plot.title = element_text(size = 30),
+        plot.subtitle = element_text(size=18, face = "italic", 
+                                     color = "black",  hjust = 0.5, vjust = -1),
+        plot.background = element_blank(),
+        plot.margin = margin(4, 4, 4, 4, "cm"))+   
+        scale_colour_brewer(palette = "Dark2")
+
+anim_imp <- p.imp + 
+  transition_states(Year, transition_length = 1, state_length = 1) +
+  view_follow(fixed_x = FALSE)  +
+  labs(title = 'Imported Viruses in: {closest_state}',  
+       subtitle  = " ")
+
+
+animate(anim_imp, 100, fps = 5,  width = 1200, height = 1000, 
+        renderer = gifski_renderer("Animation/gganim_imp.gif"))
+
+```
+
+
+## Overview of weather
+
+```{r}
+
+weather <- fulldata %>% 
+  pivot_wider(names_from = c(Commute_Count, Commute_IR) ,
+              values_from = Value) %>% 
+  
+  pivot_longer(cols = c(local_count_na, imp_count_na),
+               names_to = "Count_Type",
+               values_to = "Count")%>% 
+  
+  pivot_longer(cols = c(na_local_IR, na_imp_IR),
+               names_to = "IR_Type",
+               values_to = "IR")
+
+w_graph <- weather%>% 
+  group_by(Year) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2),
+            Min_Temprature = round(mean(meanMinTavg), 2),
+            Max_Temprature = round(mean(meanMaxTavg), 2),
+            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
+            `Incidence Percent` = round(mean(IR, na.rm = TRUE), 2)*100)
+
+
+graph <- weather%>% 
+  group_by(MonthYear) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2),
+            Min_Temprature = round(mean(meanMinTavg), 2),
+            Max_Temprature = round(mean(meanMaxTavg), 2),
+            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
+            `Incidence Percent` = round(mean(IR, na.rm = TRUE), 2)*100)
+
+
+
+
+fit <- lm( `Incidence Percent` ~ Rainfall, data = w_graph )
+fit2 <- lm( `Incidence Percent` ~ Rainfall, data = graph )
+
+summary(fit)
+summary(fit2)
+
+
+ggplot(graph, aes(x = Rainfall, y = `Incidence Percent`)) +
+  geom_point() +
+  stat_smooth(method = "lm")+
+  labs(title = "Linear Regression of Incidence Percent and Rainfall",
+       subtitle = "where incedence occured is being predicted in terms of rainfall")
+
+ggplot(graph, aes(x = Max_Temprature, y = `Incidence Percent`)) +
+  geom_point() +
+  stat_smooth(method = "lm")+
+  labs(title = "Linear Regression of Incidence Percent and Average Temperature",
+       subtitle = "where incedence occured is being predicted in terms of average temperature")
+
+
+```
+
+```{r}
+
+# overview rainfall
+ggplotly  (ggplot(w_graph)+
+  theme_bw() +
+  labs(title = "<span style = 'color:blue'> <b>Rainfall</b> </span> vs 
+       <span style = 'color:orange'><b>Incidence Rate</b></span> in SA3 Regions.",
+       y = " ") + 
+  scale_y_continuous(breaks = seq(0, 100, 10))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+  
+  geom_line(aes(x = Year, y = Rainfall), linetype = "dotdash",
+            color = "blue", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Rainfall), 
+  #           color = "blue", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=65, 
+           label="Rainfall (in mm)", color="blue") +
+  
+  geom_line(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=10, 
+           label="Incidence Percent", color="orange") )
+
+
+
+# overview temperature
+
+ggplotly  (ggplot(w_graph)+
+  theme_bw() +
+  labs(title = "Average Temperature vs Incidence Rate in SA3 Regions",
+       y = " ") + 
+  scale_y_continuous(breaks = seq(0, 35, 5))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+    
+  geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
+            color = "dark green", alpha = 0.4, size = 1) + 
+  # geom_point(aes(x = Year, y = Min_Temprature), 
+  #           color = "dark green", alpha = 0.7, size = 1.5) + 
+  annotate(geom="text", x=2008.5, y=14, 
+           label="Min Temperature (in °C)", color="dark green")+
+  
+  geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+            color = "red", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Max_Temprature),
+  #           color = "red", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.9, y=25, 
+           label="Max Temperature (in °C)", color="red")+
+  
+  geom_line(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`), 
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=5, 
+           label="Incidence Percent", color="orange") )
+
+```
+
+```{r}
+# data cleaning for weather map
+# color palette
+#cols <- carto.pal(pal1 = "green.pal", n1 = 2, pal2 = "red.pal", n2 = 4)
+
+new_shapefile <- readOGR(dsn = "data/SA3_2011/")
+# attr(new_shapefile, "sf_column")
+
+
+temp_map <- fulldata%>% 
+  group_by(SA3_NAME_2011, Virus_Name) %>% 
+  summarise(Max_temp = round(mean(meanMaxTavg), 2),
+            Min_temp = round(mean(meanMinTavg), 2))
+
+shapefile_temp <- geo_join(new_shapefile, temp_map,
+                             "SA3_NAME11", "SA3_NAME_2011")
+
+    pal_temp <- colorNumeric("RdBu", temp_map$Max_temp, reverse = TRUE)
+    
+    leaflet(shapefile_temp) %>%
+      addPolygons(#data = new_shapefile$geometry,
+                  weight = 1,
+                  fillColor = ~pal_temp(Max_temp),
+                  opacity = 0.5,
+                  color = "white",
+                  fillOpacity = 0.9,
+                  smoothFactor = 0.5) %>%
+         addLegend("topright", pal = pal_temp, 
+                values = ~Max_temp, 
+                opacity = 1, 
+                title = "Average Max_temp") %>% 
+      setMapWidgetStyle(list(background= "#fcf9f2"))
+    
+
+
+#rainfall map
+
+
+#temp map
+```
+
+
+```{r}
+rain_map <- fulldata%>% 
+  group_by(SA3_NAME_2011, Virus_Name) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2))
+
+shapefile_rain <- geo_join(new_shapefile, rain_map,
+                             "SA3_NAME11", "SA3_NAME_2011")
+
+    pal_rain <- colorNumeric("RdBu", rain_map$Rainfall, reverse = TRUE)
+    
+    leaflet(shapefile_rain) %>%
+      addPolygons(#data = new_shapefile$geometry,
+                  weight = 1,
+                  fillColor = ~pal_rain(Rainfall),
+                  opacity = 0.5,
+                  color = "white",
+                  fillOpacity = 0.9,
+                  smoothFactor = 0.5) %>%
+         addLegend("topright", pal = pal_rain, 
+                values = ~Rainfall, 
+                opacity = 1, 
+                title = "Average Rainfall")%>% 
+      setMapWidgetStyle(list(background= "#fcf9f2"))
+```
+
+
+
+
+
+## Extras (graphs for all weather conditions)
+
+```{r}
+
+ggplotly  (ggplot(weather)+
+  theme_bw() +
+  labs(title = "Weather Conditions SA3 Regions",
+       y = " ") +
+  scale_y_continuous(breaks = seq(-10, 100, 10))+
+  scale_x_continuous(breaks = c(2007:2020)) +
+
+  geom_line(aes(x = Year, y = Rainfall), linetype = "dotdash",
+            color = "blue", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Rainfall),
+  #           color = "blue", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=65,
+           label="Rainfall (in mm)", color="blue") +
+
+  geom_line(aes(x = Year, y = Min_Temprature), linetype = "twodash",
+            color = "dark green", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Min_Temprature),
+  #           color = "dark green", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=17,
+           label="Min Temperature (in °C)", color="dark green")+
+
+  geom_line(aes(x = Year, y = Max_Temprature), linetype = "twodash",
+            color = "red", alpha = 0.4, size = 1) +
+  # geom_point(aes(x = Year, y = Max_Temprature),
+  #           color = "red", alpha = 0.7, size = 1.5) +
+  annotate(geom="text", x=2008.9, y=28,
+           label="Max Temperature (in °C)", color="red")+
+
+  geom_line(aes(x = Year, y = `Incidence Percent`),
+            color = "orange", alpha = 0.8, size = 1) +
+  geom_point(aes(x = Year, y = `Incidence Percent`),
+            color = "orange", alpha = 1, size = 1.5) +
+  annotate(geom="text", x=2008.5, y=5,
+           label="Incidence Percent", color="orange") )
+
+```
+
+
+## Extras (facet bargraph for animation)
+
+```{r}
+
+library(gganimate)
+
+
+animation <- ggplot(animation, aes(x = Virus_Name, 
+                                   y = IR, 
+                                   fill = Virus_Name)) +
+  
+  geom_bar(stat = 'identity', show.legend = FALSE, alpha = 0.9) +
+  geom_text(aes(y = 0, label = paste(" ")), vjust = 0.2, hjust = 1) +
+  geom_text(aes(y = IR, label = IR, hjust=0)) +
+  facet_wrap(~Transmission) +
+  labs(x = "Virus", y = "Incidence Rate",
+       title = "Yearly sum of virus incidence occured")+
+  theme_bw()
+
+# content <-  paste0("Year: ", Year)
+
+animation + transition_time(Year) 
+
+  # shadow_mark() +
+  # enter_grow() +
+  # enter_fade()
+
+
+library(magick)
+library(magrittr)
+
+library(gifski)
+
+png_files <- list.files("/Users/prachi/Desktop/Internship/ETC5543/Animation", 
+                        pattern = ".*png$", full.names = TRUE)
+gifski(png_files, gif_file = "/Users/prachi/Desktop/Internship/ETC5543/Animation/animation.gif",
+       width = 800, height = 600, delay = 1)
+
+knitr::include_graphics("/Users/prachi/Desktop/Internship/ETC5543/Animation/animation.gif")
+
+```
+
+
+## Extras (Curved lines for connection map)
+
+```{r}
+connection_map <- leaflet() %>%
+  addTiles() %>%  
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T))
+
+for (i in 1:nrow(final_map_data)){
+  
+  connection_map <- connection_map %>% 
+    addPolylines(lng = c(final_map_data$wlong[i],137),
+               lat = c(final_map_data$wlat[i],-23.2), weight=1.5, opacity=3, color="pink")
+}
+
+connection_map
+
+for (i in 1:nrow(final_map_data)){
+b<- gcIntermediate(c(final_map_data$wlong[i],final_map_data$wlat), c(137,-23.2),
+               n=100, 
+               addStartEnd=TRUE,
+               sp=TRUE) %>%
+  addPolylines(lng = c(final_map_data$wlong[i],137),
+               lat = c(final_map_data$wlat[i],-23.2), weight=1.5, opacity=3, color="pink")
+}
+
+
+b %>%
+  leaflet()  %>% addTiles() %>%
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat,
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T)) 
+  
+
+
+```
+
+```{r}
+gc_intermediate <- data.frame()  
+for (i in 1:nrow(final_map_data)){
+  dataframe1 <- cbind(gcIntermediate(c(final_map_data$wlong[i],final_map_data$wlat[i]), c(137,-23.2),
+               n=100, 
+               addStartEnd=TRUE,
+               sp=TRUE) , group = i)
+  gc_intermediate <- rbind(gc_intermediate,dataframe1)
+}
+
+gc_intermediate %>%
+  leaflet()  %>% addTiles() %>%  
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat, 
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T)) %>% 
+  addPolylines(group = group)
+
+# addPolylines(lng = c(final_map_data$wlong[i], 137), lat=c(final_map_data$wlat[i], -23.2), weight=1, opacity=3, color="white")
+for (i in 1:nrow(final_map_data)){
+  if (abs(final_map_data$wlong[i]) + abs(137) > 180){
+    lines()
+  }
+}
+
+diff_of_lon=abs(final_map_data$wlong[11]) + abs(137)
+
+a <- gcIntermediate(c(final_map_data$wlong[11],final_map_data$wlat[11]), c(137,-23.2),
+               n=100, 
+               addStartEnd=TRUE,
+               sp=TRUE) 
+
+
+ a %>%
+  leaflet()  %>% addTiles() %>%
+  addCircleMarkers(lng=final_map_data$wlong, lat=final_map_data$wlat,
+                   popup=content, radius = 4, opacity = final_map_data$count) %>%
+  addMarkers(lng = 137, lat = -23.2,
+             label = "Australia",
+             labelOptions = labelOptions(noHide = T)) %>%
+  addPolylines()
+ 
+ 
+
+
+```
+
+
+```{r}
+library(jpeg)
+library(maps)
+library(geosphere)
+library(grid)
+
+new_map_data <- connection_data %>% 
+  inner_join(. , world_df, by=c("Country of Origin"="wname")) %>% 
+  filter(Virus == "Zika") %>% 
+  group_by(`Country of Origin`) %>% 
+  summarise(total_count = sum(Count),
+            wlat = mean(wlat),
+            wlong = mean(wlong))%>% 
+  add_column(aname = "Australia",
+             alat = -23.2,
+             along = 137) 
+  # transform(wlong = as.numeric(wlong),
+  #           wlat = as.numeric(wlat),
+  #           along = as.numeric(along),
+  #           alat = as.numeric(alat))
+
+
+# all_pairs <- cbind(t(combn(don$long, 2)), 
+#                 t(combn(don$lat, 2))) %>% as.data.frame()
+# 
+# colnames(all_pairs)=c("long1","long2","lat1","lat2")
+
+
+```
+
+```{r}
+
+plot_my_connection=function( dep_lon, dep_lat, arr_lon, arr_lat, ...)
+  {
+      inter <- gcIntermediate(c(dep_lon, dep_lat), c(arr_lon, arr_lat), 
+                              n=50, addStartEnd=TRUE, breakAtDateLine=F)             
+      inter=data.frame(inter)
+      diff_of_lon=abs(dep_lon) + abs(arr_lon)
+      
+      if(diff_of_lon > 180)
+        {
+          lines(subset(inter, lon>=(-10)), ...)
+          lines(subset(inter, lon<(-10)), ...)
+        }
+      
+      else
+        {
+          lines(inter, ...)
+        }
+ }
+
+# background map
+par(mar=c(0,0,0,0))
+maps::map('world',col="#f2f2f2", fill=TRUE, bg="white", 
+          lwd=0.05,mar=rep(0,4),border=0, ylim=c(-80,80) )
+
+# add every connections:
+  for(i in 1:nrow(new_map_data))
+    {
+      plot_my_connection(new_map_data$along[i], 
+                         new_map_data$alat[i], 
+                         new_map_data$wlong[i], 
+                         new_map_data$wlat[i], 
+                         col="#69b3a2", lwd=1)
+    }
+
+# add points 
+points(x=new_map_data$wlong, y=new_map_data$wlat, col="#69b3a2", cex=1, pch=20)
+
+```
+
+
+
+```{r}
+
+ggplot(weather_graph)+
+               theme_bw() +
+               labs(title = "Comaparing Humidity and Incidence ",
+                    y = " ") + 
+               scale_x_continuous(breaks = c(2007:2020)) +
+               
+               geom_line(aes(x = Year, y = `Average Humidity`, color = "dark green", alpha = 0.4, size = 1) 
+                         ) +
+               geom_point(aes(x = Year, y = `Average Humidity`), 
+                          color = "dark green", alpha = 1, size = 1.5) +
+
+               geom_line(aes(x = Year, y = `Incidence Percent`), 
+                         color = "orange", alpha = 0.8, size = 1) +
+               geom_point(aes(x = Year, y = `Incidence Percent`), 
+                          color = "orange", alpha = 1, size = 1.5) +
+  scale_color_discrete(labels=c("Control", "Treatment 1", "Treatment 2"))
+            
+```
+```{r}
+temp <- weather_graph %>% select(Year, `Average Humidity`, `Incidence Percent`) %>% 
+  pivot_longer(cols = c('Average Humidity', 'Incidence Percent'), names_to = "Type", values_to = "Value")
+
+weather_graph %>% 
+  filter(Virus_name == "BFV", 
+    Type %in% c("Incidence Percent", "Average Humidity")) %>% 
+  ggplot(aes(x = Year, y = Value, color = Type)) +
+  geom_line() +
+  geom_point() +
+  theme_bw()
+```
+
+
