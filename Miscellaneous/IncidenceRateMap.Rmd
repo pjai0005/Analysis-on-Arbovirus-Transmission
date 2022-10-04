@@ -1,0 +1,122 @@
+---
+title: "Incidence Rate Map"
+author: "Sahinya Akila, Prachi Jaiswal"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(sf)
+library(broom)
+library(readxl)
+library(rgdal)
+library(tigris)
+library(leaflet)
+```
+
+```{r}
+full_data <- read_csv(file.choose())
+ 
+```
+
+```{r}
+shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
+
+shapefile_df <- fortify(shapefile, region = "SA3_NAME11")
+
+match(paste0(virus, "_IR", type),names(full_data))
+full_data %>% 
+      filter(Year >= 2007 & Year <= 2011) %>% 
+      group_by(SA3_NAME_2011) %>% 
+  summarise_at(match(paste0(virus, "_IR", type),names(full_data))-1, mean)
+
+full_data[grepl(paste0(virus, "_IR", type),colnames(full_data))]
+
+data_avg_2007 <- full_data %>% 
+  group_by(SA3_NAME_2011, Year) %>% 
+  summarise(mean_incidence_rate = mean()) %>% 
+  filter(Year == "2007")
+
+shapefile_df <- shapefile_df %>%
+  left_join(. , data_avg_2007, by=c("id"="SA3_NAME_2011"))
+input <- data.frame(virus = c("BFV"), type = c("LA"))
+data_avg <- full_data %>% 
+      filter(Year >= 2007 & Year <= 2011) %>% 
+      group_by(SA3_NAME_2011) %>% 
+      summarise_at(match(paste0(input$virus, "_IR", input$type),names(full_data))-1, list(mean = mean))
+    
+    shapefile_temp <- geo_join(shapefile, data_avg, "SA3_NAME11", "SA3_NAME_2011")
+    leaflet(shapefile_temp) %>%
+      addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                  fillColor = ~colorNumeric("RdYlBu", mean)(mean),
+                  highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                      bringToFront = TRUE))
+```
+
+```{r}
+shapefile_temp <- geo_join(shapefile, data_avg_2007, "SA3_NAME11", "SA3_NAME_2011")
+leaflet(shapefile_temp) %>%
+  addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    fillColor = ~colorNumeric("RdYlBu", mean_incidence_rate)(mean_incidence_rate),
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE))
+
+```
+
+```{r}
+output$ir_map <- renderLeaflet({
+    if (input$groupYear == "1"){
+      start_year <- 2002
+      end_year <- 2006
+    } else if (input$groupYear == "2"){
+      start_year <- 2007
+      end_year <- 2011
+    } else {
+      start_year <- 2012
+      end_year <- 2017
+    }
+    data_avg <- full_data %>% 
+      filter(Year >= 2007 & Year <= 2011) %>% 
+      group_by(SA3_NAME_2011) %>% 
+      summarise_at(match(paste0(input$virus, "_IR", input$type),names(full_data))-1, list(mean = mean))
+    
+    shapefile_temp <- geo_join(shapefile, data_avg, "SA3_NAME11", "SA3_NAME_2011")
+    leaflet(shapefile_temp) %>%
+      addPolygons(color = "#444444", 
+                  weight = 1, 
+                  fillColor = ~colorNumeric("RdYlBu", mean)(mean))
+  })
+```
+
+```{r}
+get.centroid.bb <- function(x){
+    N <- length(x)  # Number of polygons
+    # Initialise data.frame
+    Centroids.bb <- data.frame(matrix(NA, N, 2, dimnames = list(NULL, c("long", "lat"))))
+    for(i in 1:N){
+        # Bounding box of polygon
+        bb <- bbox(x@polygons[[i]])
+        # Compute centroid
+        Centroids.bb[i,] <- c(
+            0.5 * (bb[1,1] + bb[1,2]),
+            0.5 * (bb[2,1] + bb[2,2]))
+    }
+    return(Centroids.bb)
+}
+
+centroid <- get.centroid.bb(shapefile) %>% cbind(shapefile$SA3_NAME11)
+colnames(centroid) <- c("long", "lat", "SA3_NAME_2011")
+data <- full_data %>% group_by(SA3_NAME_2011) %>%
+            summarise(avg_donation_rate = mean(donationrate1000))
+joined_data <- inner_join(centroid, data)
+```
+
+
