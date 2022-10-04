@@ -27,13 +27,16 @@ library(summarytools)
 library(stargazer)
 library(GGally)
 library(ggbreak)
+library(formattable)
 
 
 ```
 
 
 ```{r}
-full_data <- read_csv(file.choose())
+#full_data <- read_csv(file.choose())
+
+full_data <- read_csv("~/Desktop/Internship/Documents/fulldata.csv")
 
 long_data <- full_data %>% pivot_longer(35:54, names_to = "Virus", values_to = "Value")
 
@@ -185,15 +188,17 @@ nb_data <- data.frame(Year = as.integer(nb_data$Year),
 nb_data[is.na(nb_data)] <- 0 
 
 plot_data <- data.frame(c("Mean of IR", "Variance of IR", "Variance Ratio"),
-                        c(round(mean(nb_data$Donation), 4), round(var(nb_data$Donation), 4), round(var(nb_data$Donation) / mean(nb_data$Value), 4)))
+                        c(round(mean(nb_data$Donation), 10), round(var(nb_data$Donation), 10), round(var(nb_data$Donation) / mean(nb_data$Value), 10)))
 
 colnames(plot_data) <- c("Statistic", "Value")
+#plot_data$Value <- color_bar("darkgreen")(plot_data$Value)
 
-kableExtra::kbl(plot_data)
+kableExtra::kbl(plot_data,caption = "Data Overview", digits = 5) %>% 
+  kable_classic(full_width = FALSE, html_font = "Helvetica")
 
-paste("Mean of IR", round(mean(nb_data$Donation), 4))
-paste("Variance of IR", round(var(nb_data$Donation), 4))
-paste("Variance Ratio", round(var(nb_data$Donation) / mean(nb_data$Value), 4)) 
+# paste("Mean of IR", round(mean(nb_data$Donation), 4))
+# paste("Variance of IR", round(var(nb_data$Donation), 4))
+# paste("Variance Ratio", round(var(nb_data$Donation) / mean(nb_data$Value), 4)) 
 
 ```
 
@@ -201,21 +206,32 @@ paste("Variance Ratio", round(var(nb_data$Donation) / mean(nb_data$Value), 4))
 # Summary stats
 ```{r}
 
-pois <- glm(Donation ~ Value , "poisson", data = nb_data) 
+poisson <- glm(Donation ~ Value , "poisson", data = nb_data) 
 
-negb <- glm.nb(Donation ~ Value , data = nb_data)
+neg_binomial <- glm.nb(Donation ~ Value , data = nb_data)
 
-negb_weather <- glm.nb(Donation ~ Value+Temperature+Humidity+Rainfall, data = nb_data)
+neg_binomial_weather <- glm.nb(Donation ~ Value+Temperature+Humidity+Rainfall, data = nb_data)
 
-negb_all <- glm.nb(Donation ~ ., data = nb_data)
+neg_binomial_full_data <- glm.nb(Donation ~ ., data = nb_data)
 
 
-summary(pois)
-summary(negb)
-summary(negb_weather)
-summary(negb_all)# has lower AIC therefore better model
+summary(neg_binomial_full_data)# has lower AIC therefore better model
 
-AIC(pois, negb, negb_all, negb_weather)
+
+```
+
+```{r}
+aic_data <- AIC(neg_binomial_full_data, neg_binomial_weather, neg_binomial, poisson)
+
+kableExtra::kbl(aic_data,caption = "AIC Statistics", digits = 5) %>% 
+  kable_classic(full_width = FALSE, html_font = "Helvetica")
+
+```
+
+
+```{r}
+
+countreg::rootogram(neg_binomial_full_data)
 ```
 
 
@@ -233,7 +249,9 @@ Residual deviance: A low residual deviance implies that the model you have train
 
 Degree of freedom: For a well-fitting model, the residual deviance should be close to the degrees of freedom, which is not the case here. For example, this could be a result of over dispersion where the variation is greater than predicted by the model. 
 
-# Zero Inflated Count Data Regression
+# Extras
+
+## Zero Inflated Count Data Regression
 
 ```{r}
 
@@ -271,10 +289,7 @@ paste("Residual Deviance", negb_all$deviance)
 paste("Degree of Freedom", negb_all$df.residual) 
 
 
-countreg::rootogram(negb_all)
 ```
-
-
 
 
 ## 3d lm for donation rate
@@ -452,6 +467,8 @@ scatter3D(x, y, z, pch = 19, cex = 1,colvar = NULL, col="red",
 
 
 ```
+
+
 
 
 
