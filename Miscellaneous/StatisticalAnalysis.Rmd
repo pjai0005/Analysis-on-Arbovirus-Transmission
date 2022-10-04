@@ -26,7 +26,6 @@ library(pscl)
 library(summarytools)
 library(stargazer)
 library(GGally)
-library(plot3D)
 library(ggbreak)
 
 
@@ -185,11 +184,15 @@ nb_data <- data.frame(Year = as.integer(nb_data$Year),
 # setting NA to 0
 nb_data[is.na(nb_data)] <- 0 
 
+plot_data <- data.frame(c("Mean of IR", "Variance of IR", "Variance Ratio"),
+                        c(round(mean(nb_data$Donation), 4), round(var(nb_data$Donation), 4), round(var(nb_data$Donation) / mean(nb_data$Value), 4)))
 
+colnames(plot_data) <- c("Statistic", "Value")
+
+kableExtra::kbl(plot_data)
 
 paste("Mean of IR", round(mean(nb_data$Donation), 4))
 paste("Variance of IR", round(var(nb_data$Donation), 4))
-
 paste("Variance Ratio", round(var(nb_data$Donation) / mean(nb_data$Value), 4)) 
 
 ```

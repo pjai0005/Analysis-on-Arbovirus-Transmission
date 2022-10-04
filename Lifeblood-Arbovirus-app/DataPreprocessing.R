@@ -154,3 +154,18 @@ weather_data_3d <- full_data %>%
             `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
             `Incidence Percent` = round(mean(Value, na.rm = TRUE), 2)*100)
 
+# Statistical Analysis - Negative Bimonial
+nb_data <- long_data %>% 
+  filter(str_detect(Type, "IR")) 
+
+
+nb_data <- data.frame(Year = as.integer(nb_data$Year),
+                      Rainfall = as.integer(nb_data$Rainavg),
+                      Temperature = (as.integer(nb_data$meanMaxTavg + nb_data$meanMinTavg)/2),
+                      Humidity = as.integer((nb_data$meanRHTMinavg + nb_data$meanRHTMaxavg)/2),
+                      Donation = as.integer(nb_data$donationrate),
+                      Value = as.integer(nb_data$Value))
+
+# setting NA to 0
+nb_data[is.na(nb_data)] <- 0 
+
