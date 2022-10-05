@@ -189,10 +189,11 @@ neg_binomial_weather <- glm.nb(Donation ~ Value+Temperature+Humidity+Rainfall, d
 neg_binomial_full_data <- glm.nb(Donation ~ ., data = nb_data)
 
 #  AIC table
-aic_data <- data_frame(AIC(neg_binomial_full_data, neg_binomial_weather, neg_binomial, poisson))
+aic_data <- data_frame(AIC(neg_binomial, neg_binomial_full_data, neg_binomial_weather, poisson))
 
-aic_data <- cbind(c("Poisson", "Negative Binomial (Incidence Rate)", 
-                    "Negative Binomial (Weather)", "Negative Binomial (Full data)"), aic_data)
+
+aic_data <- cbind(c("Negative Binomial (Incidence Rate)", "Negative Binomial (Full data)", 
+                    "Negative Binomial (Weather)", "Poisson (Incidence Rate)"), aic_data)
 colnames(aic_data) <- c("Model", "Degree of Freedom", "AIC Value")
 
 

@@ -215,7 +215,7 @@ neg_binomial_weather <- glm.nb(Donation ~ Value+Temperature+Humidity+Rainfall, d
 neg_binomial_full_data <- glm.nb(Donation ~ ., data = nb_data)
 
 
-summary(neg_binomial_full_data)# has lower AIC therefore better model
+summary(neg_binomial)# has lower AIC therefore better model
 
 
 ```

@@ -393,7 +393,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$rootogram <- renderPlot({
-    countreg::rootogram(neg_binomial_full_data)
+    countreg::rootogram(neg_binomial)
   })
   
   
