@@ -40,35 +40,33 @@ virus_input <- function(id){
 weather_cond_ui <- function(id){
   tagList(column(width = 3),
           column(width = 6, 
-    HTML(paste0("<h2>Overview of ", id, " in SA3 Regions</h2>")),
-         load_spinner(plotlyOutput(paste0(id, "_overview"))),
-         HTML(paste0("<h2>", id, " by SA3 Region</h2>")),
-          column(width = 3)),
-    
-         fluidRow(column(width = 5, 
-                         load_spinner(uiOutput(paste0(id, "_map"), height = 500))),
-                  
-                  column(width = 2, selectInput(paste0(id, "_virus"),
-                                                "Select a Virus:",
-                                                c("Ross River" = "RRV",
-                                                  "Dengue" = "DENV",
-                                                  "Barmah Forest" = "BFV",
-                                                  "Murray Valley Encephalitis" = "MVEV",
-                                                  "West Nile/Kunjin" = "WNV",
-                                                  "Zika" = "ZIKV", 
-                                                  "Japanese Encephalitis" = "JEV",
-                                                  "Chikungunya" = "CHIKV"))),
-                  
-                  column(width = 5, HTML("<br>")
-                           , load_spinner(uiOutput(paste0(id, "_graph"), height = 500)))
-                  
-                  # fluidRow(column(width = 3),
-                  #          column(width = 6, 
-                  #                 load_spinner(uiOutput(paste0(id, "_map")))),
-                  #          column(width = 3))
-         )
+                 HTML(paste0("<h2>Overview of ", id, " in SA3 Regions</h2>")),
+                 load_spinner(plotlyOutput(paste0(id, "_overview"))),
+                 HTML(paste0("<h2>", id, " by SA3 Region</h2>")),
+                 column(width = 3)),
+          
+          fluidRow(column(width = 5, 
+                          load_spinner(uiOutput(paste0(id, "_map"), height = 500))),
+                   
+                   column(width = 2, selectInput(paste0(id, "_virus"),
+                                                 "Select a Virus:",
+                                                 c("Ross River" = "RRV",
+                                                   "Dengue" = "DENV",
+                                                   "Barmah Forest" = "BFV",
+                                                   "Murray Valley Encephalitis" = "MVEV",
+                                                   "West Nile/Kunjin" = "WNV",
+                                                   "Zika" = "ZIKV", 
+                                                   "Japanese Encephalitis" = "JEV",
+                                                   "Chikungunya" = "CHIKV"))),
+                   
+                   column(width = 5, HTML("<br>")
+                          , load_spinner(uiOutput(paste0(id, "_graph"), height = 500)))
+                   
+                   # fluidRow(column(width = 3),
+                   #          column(width = 6, 
+                   #                 load_spinner(uiOutput(paste0(id, "_map")))),
+                   #          column(width = 3))
+          )
   )
   
 }
-
-

@@ -3,16 +3,18 @@ library(tigris)
 library(leaflet.extras)
 library(rgeos)
 library(plotly)
+library(kableExtra)
+library(formattable)
 
 source("DataPreprocessing.R")
 source("modules.R")
 
 shinyServer(function(input, output, session) {
-
+  
   output$connection_map <- renderLeaflet({
     final_map_data <- connection_data %>% 
       filter(Virus == input$connection_input)  
-
+    
     content <- paste(sep = "<br/>",
                      "Virus Imported from: ", "<b>", final_map_data$`origin_country`, "</b>",
                      "Type of Virus: ",  "<b>", final_map_data$`Virus`, "</b>",
@@ -129,7 +131,7 @@ shinyServer(function(input, output, session) {
           scale_color_manual(values=c("#851e3e", "#009688")) +
           theme_light() +
           theme(legend.position="none")
-          
+        
         ggplotly(plot)%>%
           config(displayModeBar = FALSE)
       })
@@ -139,7 +141,7 @@ shinyServer(function(input, output, session) {
              , width = 600, height = 400, align = "center")
       )
     }
-    })
+  })
   
   output$dr_map <- renderUI({
     data <- full_data
@@ -155,18 +157,18 @@ shinyServer(function(input, output, session) {
     
     if (length(data) != 0){
       renderLeaflet({
-      data <- full_join(centroid, data) %>% na.omit()
-      
-      pal <- colorNumeric("RdYlGn", data$avg_donation_rate)
-      content <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",data$SA3_NAME_2011, "<br>",
-                        "<b>Avg. Donation Rate: </b>", round(data$avg_donation_rate, 2))
-      data %>%
-        leaflet() %>%
-        addTiles() %>%
-        setView(lat = -30, lng = 138, zoom = 4)%>%
-        addProviderTiles("CartoDB.Positron")  %>%
-        addCircleMarkers(~long, ~lat,
-                         fillColor = ~pal(avg_donation_rate), fillOpacity = 0.7, color="white", radius=10, stroke=FALSE, popup = content) %>% addLegend( pal=pal, values=~avg_donation_rate, opacity=0.9, title = "Avg. Donation Rate", position = "topright")
+        data <- full_join(centroid, data) %>% na.omit()
+        
+        pal <- colorNumeric("RdYlGn", data$avg_donation_rate)
+        content <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",data$SA3_NAME_2011, "<br>",
+                          "<b>Avg. Donation Rate: </b>", round(data$avg_donation_rate, 2))
+        data %>%
+          leaflet() %>%
+          addTiles() %>%
+          setView(lat = -30, lng = 138, zoom = 4)%>%
+          addProviderTiles("CartoDB.Positron")  %>%
+          addCircleMarkers(~long, ~lat,
+                           fillColor = ~pal(avg_donation_rate), fillOpacity = 0.7, color="white", radius=10, stroke=FALSE, popup = content) %>% addLegend( pal=pal, values=~avg_donation_rate, opacity=0.9, title = "Avg. Donation Rate", position = "topright")
       })
     } else {
       renderImage(
@@ -361,7 +363,17 @@ shinyServer(function(input, output, session) {
                geom_line() +
                geom_point() +
                theme_bw()
-             )%>%
+    )%>%
       config(displayModeBar = FALSE)
   })
+  
+  output$data_overview <- function() {
+    # formattable(
+    #   head(plot_data),
+    #   list(
+    #     ## a coloured bar with length proportional to value
+    #     `Value` = color_bar("lightblue")
+    #   )
+    # )
+  }
 })
