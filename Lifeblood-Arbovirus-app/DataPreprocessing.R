@@ -3,6 +3,8 @@ library(readxl)
 library(rgdal)
 library(tidyverse)
 library(tigris)
+library(MASS)
+library(pscl)
 
 # Loading required datasets---------------------------------------------------------
 shapefile <- readOGR(dsn = paste0(getwd(), "/../Data/SA3_2011/"))
@@ -169,7 +171,37 @@ nb_data <- data.frame(Year = as.integer(nb_data$Year),
 # # setting NA to 0
 nb_data[is.na(nb_data)] <- 0
 
+
+## creating a data frame
 plot_data <- data.frame(c("Mean of IR", "Variance of IR", "Variance Ratio"),
                         c(round(mean(nb_data$Donation), 10), round(var(nb_data$Donation), 10), round(var(nb_data$Donation) / mean(nb_data$Value), 10)))
 
 colnames(plot_data) <- c("Statistic", "Value")
+
+
+## Summary Stats
+poisson <- glm(Donation ~ Value , "poisson", data = nb_data) 
+
+neg_binomial <- glm.nb(Donation ~ Value , data = nb_data)
+
+neg_binomial_weather <- glm.nb(Donation ~ Value+Temperature+Humidity+Rainfall, data = nb_data)
+
+neg_binomial_full_data <- glm.nb(Donation ~ ., data = nb_data)
+
+#  AIC table
+aic_data <- data_frame(AIC(neg_binomial_full_data, neg_binomial_weather, neg_binomial, poisson))
+
+aic_data <- cbind(c("Poisson", "Negative Binomial (Incidence Rate)", 
+                    "Negative Binomial (Weather)", "Negative Binomial (Full data)"), aic_data)
+colnames(aic_data) <- c("Model", "Degree of Freedom", "AIC Value")
+
+
+
+
+
+
+
+
+
+
+

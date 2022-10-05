@@ -5,6 +5,8 @@ library(rgeos)
 library(plotly)
 library(kableExtra)
 library(formattable)
+library(RColorBrewer)
+library(viridis) 
 
 source("DataPreprocessing.R")
 source("modules.R")
@@ -130,7 +132,9 @@ shinyServer(function(input, output, session) {
           geom_point()+
           scale_color_manual(values=c("#851e3e", "#009688")) +
           theme_light() +
-          theme(legend.position="none")
+          theme(legend.position="top")+
+          scale_fill_brewer(palette = "Dark2")+ 
+          scale_color_brewer(palette = "Dark2")
         
         ggplotly(plot)%>%
           config(displayModeBar = FALSE)
@@ -237,7 +241,10 @@ shinyServer(function(input, output, session) {
                scale_x_continuous(breaks = c(2007:2020)) +
                geom_line() +
                geom_point() +
-               theme_bw()
+               theme_bw()+
+               scale_fill_brewer(palette = "Dark2")+ 
+               scale_color_brewer(palette = "Dark2")+
+               theme(legend.position = 'top')
     )%>%
       config(displayModeBar = FALSE)
   })
@@ -299,7 +306,10 @@ shinyServer(function(input, output, session) {
                scale_x_continuous(breaks = c(2007:2020)) +
                geom_line() +
                geom_point() +
-               theme_bw()
+               theme_bw()+
+               scale_fill_brewer(palette = "Dark2")+ 
+               scale_color_brewer(palette = "Dark2")+
+               theme(legend.position = 'top')
     )%>%
       config(displayModeBar = FALSE)
   })
@@ -314,7 +324,7 @@ shinyServer(function(input, output, session) {
                stat_smooth(method = "lm")+
                theme_bw()+
                labs(title = "Incidence is predicted in terms of Humidity"))%>%
-      config(displayModeBar = FALSE)
+      config(displayModeBar = FALSE) 
   })
   
   ### humidity map
@@ -362,18 +372,29 @@ shinyServer(function(input, output, session) {
                scale_x_continuous(breaks = c(2007:2020)) +
                geom_line() +
                geom_point() +
-               theme_bw()
+               theme_bw()+
+               scale_fill_brewer(palette = "Dark2")+ 
+               scale_color_brewer(palette = "Dark2")+
+               theme(legend.position = 'top')
     )%>%
       config(displayModeBar = FALSE)
   })
   
-  output$data_overview <- function() {
-    # formattable(
-    #   head(plot_data),
-    #   list(
-    #     ## a coloured bar with length proportional to value
-    #     `Value` = color_bar("lightblue")
-    #   )
-    # )
-  }
+  
+  output$overview_table <- renderDataTable({
+    (plot_data)
+  })
+  
+  
+  output$aic_table <- renderDataTable({
+
+    (aic_data)
+
+  })
+  
+  output$rootogram <- renderPlot({
+    countreg::rootogram(neg_binomial_full_data)
+  })
+  
+  
 })

@@ -468,6 +468,14 @@ scatter3D(x, y, z, pch = 19, cex = 1,colvar = NULL, col="red",
 
 ```
 
+```{r}
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
+tab_model(neg_binomial_full_data, show.se = TRUE, show.std = TRUE, show.stat = TRUE)
+```
+
+
 
 
 

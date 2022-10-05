@@ -50,9 +50,28 @@ shinyUI(fluidPage(includeCSS("www/theme.css")
                                                              , uiOutput("dr_sa3_ui")
                                                      )
                                                      , column(width = 5, load_spinner(uiOutput("dr_graph")))
-                                          )
-                                          , fluidRow(HTML('<h2>Statistical Analysis</h2>'))
-                                          , fluidRow(tableOutput("data_overview"))
+                                          ),
+                                          
+                                          fluidRow(HTML('<h2>Statistical Analysis</h2>')),
+                                          fluidRow(column(width = 3),
+                                                   column(width = 6,dataTableOutput('overview_table')),
+                                                   column(width = 3)),
+                                                   
+                                          
+                                          fluidRow(HTML('<h3>Negative Binomial</h3>')),
+                                          fluidRow(column(12,dataTableOutput('aic_table')
+                                          )),
+                                          
+                                          
+                                          fluidRow(HTML('<h3>Summary Statistics of Negative Binomial</h3>')),
+                                          fluidRow(column(width = 3),
+                                                   column(width = 6, HTML('<img src="SummaryTable.png" width="120%" height="auto">')),
+                                                   column(width = 3)),
+                                          
+                                          
+                                          fluidRow(HTML('<h3>Underfitting and Overfitting Data </h3>')),
+                                          fluidRow(column(12,load_spinner(plotOutput('rootogram'))
+                                          ))
                                )
                                , tabPanel("Weather Conditions", 
                                           HTML("<br><br><br>"),
