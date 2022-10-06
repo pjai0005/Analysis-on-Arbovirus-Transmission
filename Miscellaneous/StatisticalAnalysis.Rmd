@@ -215,7 +215,7 @@ neg_binomial_weather <- glm.nb(Donation ~ Value+Temperature+Humidity+Rainfall, d
 neg_binomial_full_data <- glm.nb(Donation ~ ., data = nb_data)
 
 
-summary(neg_binomial_full_data)# has lower AIC therefore better model
+summary(neg_binomial)# has lower AIC therefore better model
 
 
 ```
@@ -467,6 +467,14 @@ scatter3D(x, y, z, pch = 19, cex = 1,colvar = NULL, col="red",
 
 
 ```
+
+```{r}
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
+tab_model(neg_binomial_full_data, show.se = TRUE, show.std = TRUE, show.stat = TRUE)
+```
+
 
 
 
