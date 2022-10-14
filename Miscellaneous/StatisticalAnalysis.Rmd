@@ -28,6 +28,7 @@ library(stargazer)
 library(GGally)
 library(ggbreak)
 library(formattable)
+library(DT)
 
 
 ```
@@ -37,6 +38,8 @@ library(formattable)
 #full_data <- read_csv(file.choose())
 
 full_data <- read_csv("~/Desktop/Internship/Documents/fulldata.csv")
+
+long_data <- read_csv("~/Desktop/Internship/Documents/long_data.csv")
 
 long_data <- full_data %>% pivot_longer(35:54, names_to = "Virus", values_to = "Value")
 
@@ -113,29 +116,56 @@ final_data_count <- long_data %>%
 # PCA
 
 ```{r}
-clean <- final_data_ir %>% 
-  mutate(SA4 = as.numeric(as.factor(final_data_ir$SA4)))
+pca <- long_data %>% 
+  filter(str_detect(Type, "IR")) %>% 
+  group_by(SA4_CODE_2011) %>% 
+  summarise(Population = median(Humanpop),
+            Rainfall = median(Rainavg),
+            Temperature = median((meanMaxTavg + meanMinTavg)/2),
+            Humidity = median((meanRHTMinavg + meanRHTMaxavg)/2),
+            Donation = median(donationrate, na.rm = TRUE)*100,
+            `Incidence Rate` = mean(Value, na.rm = TRUE)) %>% 
+  mutate(SA4_CODE_2011 = as.numeric(SA4_CODE_2011)) %>% 
+  rename(SA4 = SA4_CODE_2011)
 
-
-pca_data <- clean %>% 
+pca_data <- pca %>% 
   column_to_rownames('SA4') %>%  # sets column 'State' to row names
   prcomp(scale.=TRUE)
-  #princomp(scores=TRUE, cor=TRUE)
 
+biplot(pca_data,scale=1) # distance
+
+
+```
+
+```{r}
 
 summary(pca_data)$importance %>%
   kbl(caption = "Summary of PCA data") %>%
   kable_classic(full_width = FALSE, html_font = "Helvetica")
 
-```
-
-```{r}
 screeplot(pca_data, type = 'line')
 
 #biplot(pca_data,scale=0) # correlation
 
-biplot(pca_data,scale=1) # distance
+
 ```
+
+```{r}
+data_table <- long_data %>% 
+  filter(str_detect(Type, "IR")) %>% 
+  group_by(SA4_CODE_2011, SA4_NAME_2011) %>% 
+  summarise(`Incidence Rate` = mean(Value, na.rm = TRUE)) %>% 
+  rename(`SA4 Code` = SA4_CODE_2011,
+         `SA4 Regions` = SA4_NAME_2011)
+
+ data_table %>% datatable(escape = FALSE, 
+                  caption = htmltools::tags$caption (style = 'caption-side: top; text-align: center;  
+                                                              color: black; font-family: Arial; 
+                                                              font-size: 150% ;', 'SA4 Regions')) %>%
+  #spk_add_deps()%>%
+  formatRound('Incidence Rate', digits = 5)
+```
+
 
 # Clusters
 

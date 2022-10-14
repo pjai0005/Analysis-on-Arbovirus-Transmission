@@ -238,7 +238,7 @@ shinyServer(function(input, output, session) {
       filter(Virus_name == input$Temperature_virus,
              Type %in% c("Incidence Percent", "Average Temperature"))
     ggplotly(ggplot(data_temp, aes(x = Year, y = Value, colour = Type)) +
-               scale_x_continuous(breaks = c(2007:2020)) +
+               scale_x_continuous(breaks = seq(2007, 2020, by = 2)) +
                geom_line() +
                geom_point() +
                theme_bw()+
@@ -303,7 +303,7 @@ shinyServer(function(input, output, session) {
       filter(Virus_name == input$Temperature_virus,
              Type %in% c("Incidence Percent", "Rainfall"))
     ggplotly(ggplot(data_rainfall, aes(x = Year, y = Value, colour = Type)) +
-               scale_x_continuous(breaks = c(2007:2020)) +
+               scale_x_continuous(breaks = seq(2007, 2020, by = 2)) +
                geom_line() +
                geom_point() +
                theme_bw()+
@@ -369,7 +369,7 @@ shinyServer(function(input, output, session) {
       filter(Virus_name == input$Temperature_virus,
              Type %in% c("Incidence Percent", "Average Humidity"))
     ggplotly(ggplot(data_humidity, aes(x = Year, y = Value, colour = Type)) +
-               scale_x_continuous(breaks = c(2007:2020)) +
+               scale_x_continuous(breaks = seq(2007, 2020, by = 2)) +
                geom_line() +
                geom_point() +
                theme_bw()+
