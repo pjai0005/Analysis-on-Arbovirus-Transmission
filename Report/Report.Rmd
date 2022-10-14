@@ -1,0 +1,254 @@
+---
+title: "Arbovirus Transmission in Australia"
+subtitle: "ETC5543 Report"
+author: "Sahinya Akila and Prachi Jaiswal"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+---
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE,
+                      echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+<!-- https://github.com/renyuanz/leonids -->
+
+# Abstract
+
+Arboviruses continue to be a major threat to public health in Australia and around the world. Emerging or re-emerging vector-borne diseases are a significant concern for global health. A thorough understanding of diseases and interactions in their natural setting is crucial for developing successful diagnostics, vaccinations, and other control methods. The purpose of this report is to present the role of arboviruses in Australia's SA3 regions. The project is created entirely with R studio and analyzes data using the programming language R. This work catalyzes the implementation of an R Shiny App that will provide future insights into the analysis of Arbovirus transmission within and outside of Australia under various conditions. Given that arboviruses are of concern due to their potential to impact both the safety and the supply of products, possible implications for blood transfusion safety will be discussed. Various weather conditions like temperature, humidity, and rainfall and their implications on the donation rate and incidence rate will also be analyzed. 
+
+This study included 334 Statistical Area 3 (SA3) regions that comprise geographic Australia,
+according to the 2011 system of SA3 categorisation(23). The SA3 region categorisation is a system designed by the Australian Bureau of Statistics (ABS) for the purposes of regional data analysis(23). SA3 regions are small enough to allow for precise analysis of weather and climate data, but broad enough that patients cannot be identified(23). The study included the states of New South Wales, Queensland, Victoria, Western Australia, South Australia, and Tasmania. It also included the Northern Territory, Australian Capital Territory, Christmas Island, Jervis Bay, Cocos (Keeling) Islands, and Norfolk Island. 
+
+**Keywords**
+
++ Arbovirus
+
+
++ R Shiny App
+
+
++ SA3 Region
+
+
++ Ross River virus (RRV), 
+
+
++ Dengue virus (DENV), 
+
+
++ Barmah Forest virus (BFV),
+
+
++ Zika virus (ZIKV), 
+
+
++ Murray Valley Encephalitis virus (MVEV), 
+
+
++ West Nile virus/Kunjin (WNV), 
+
+
++ Japanese Encephalitis (JEV), 
+
+
++ Chikungunya Virus (CHIKV)
+
+
+
+
+# Background
+
+Today, the Ross River virus (RRV), the Barmah Forest virus (BFV), and the dengue virus (DENV) are three of the most common and clinically relevant arboviruses in Australia. Since 2002, Australia has observed a rise in mosquito-borne infections, with fears that this trend may continue due to climate change. Arboviral transmission is a concern "as a result of geographical and temporal patterns of vector breeding habitats and variables influencing dispersal" (Dale et al., 1998). Environmental patterns and factors that impact viral dispersion, as well as Spatio-temporal dynamics of disease transmission, must be studied in order to forecast and prevent future arbovirus transmission in Australia.
+
+Although Australia has documented more than 70 arboviruses, only a few are human diseases, and even fewer are of serious concern. Those viruses which cause, or have caused, significant human disease in Australia are the flaviviruses and the alphaviruses. The most common flaviviruses are West Nile Kunjin, Japanese Encephalitis, Murray Valley Encephalitis, and Dengue virus, whereas the most familiar alphaviruses, are the Ross River Virus and the Barmah Forest Virus. (https://www1.health.gov.au/internet/main/publishing.nsf/Content/cda-pubs-cdi-1998-cdi2206-cdi2206a.htm)
+
+Each has its own unique ecological and epidemiological properties, and each has shown an inclination to expand and settle in new locations, which is causing increasing worry. The goal of this review is to summarize the activities of these viruses as well as to comment on new information on their ecology and spread. Several recent publications provide greater insight into the epidemiology of these viruses.
+
+
+# Objective and Significance
+
+
++ Provide a precise and current estimate of the incidence of selected arboviruses ((RRV, BFV, DENV, Zika virus, Murray Valley encephalitis virus, West Nile virus - Kunjin strain, and Japanese encephalitis virus) in a changing environment, spatially and temporally, over the past 15 years;
+
+
++ Identify any clusters and factors associated with the incidence of each arboviral disease;
+
+
++ Assess the associated transfusion-transmission infections risk on blood transfusion safety
+
+
+
+# Data and Methodology (shiny app)
+
+## Data Preparation: 
+
+The human population data categorised populations according to the ABS 2016 SA3 region
+categorisation system(29). However, the RRV and BFV case notification data was categorised
+according to the original 2011 SA3 system(23). There were minor discrepancies between the 2011 and 2016 SA3 systems, mainly that several regions had been separated into two for the 2016 edition(29). These changes were reverted in the human population dataset, merging the separated SA3 regions back together to conform to the 2011 SA3 boundaries. This was done so that the human population datasets could be accurately collated with the case notification and blood donation datasets. Infection rates per 10,000 were calculated using all case notification data and the Australian human population. Blood donation rates were calculated using only blood donations and the Australian population aged between 20 and 69 years. Also excluded were blood donation records where the donor’s SA3 of residence did not match the state of donation.
+
+
+## Ethical approval:
+
+The Lifeblood Ethics Committee approved the project Viennet 12012021b on the 19th of January 2021.
+
+
+## Dataset used:
+
+There were 2 data files that were given to us. One contained information about the virus and the other related information like weather conditions, dates, etc. These were the variables that were important for our analysis of the first dataset:
+
+
++ Virus Names
+
+
++ Transmission area (imported or local)
+
+
++ Date
+
+
++ Incidence Rate
+
+
++ Donation Rate
+
+
++ Temperature (Minimum and maximum)
+
+
++ Humidity. (Minimum and maximum)
+
+
++ Rainfall
+
+
+
+The second dataset contained information about the imported viruses and their locations. These contained variables like:
+
+
++ Origin location
+
+
+Apart from these datasets, we also required a shape file that contained the geographical map of the world in the form of a spatial data frame. This was also downloaded from————. 
+
+### Full Data
+The study period is from 2007-2017 by month
+Some viruses are locally acquired (LA) such as RRV, MVEV, BFV, DENV, WNV
+Some are imported (IMP): DENV, WNV, CHIKV, ZIKV, JEV
+
+### Donation Data
+We have the donor number, and the donor rate has been calculated.
+All entry is by SA3 (please do your research on this) and Month/year
+
+### Weather Data
+We have info on the monthly average: rainfall, max temperature, min temperature, Relative humidity at T max, relative humidity at T min, and lag of each weather variable at 1-month, 2-month, 3-month
+
+
+
+## Methodology:
+
+Shiny app:
+We have used the RShiny dashboard, which is an R package that allows us to build interactive web apps. We have also extended our Shiny app with CSS styling and analytical codes in the R programming language. Additionally, we have used a variety of files in the RShiny application, like separate R files for app.r, server.r, modules.r, and datapreprocessing. r, for the app to run smoothly. app.r has the structure for the user interface, which is the layout of the app. server. r has the backend code for the application that outputs the graphs, maps, and tables on the user interface.
+The modules.r file consists of the basic structure and a few functions that help us write our code in a sophisticated way by removing any unnecessary redundant code. And as the name suggests, the datapreprocessing.r file has all our work done for cleaning and structuring the data. A cascading style sheet is also part of our files, located inside the www folder.
+
+
+
+# Viruses imported to Australia
+
+Out of the 70 arboviruses (mentioned earlier in the background section), we have Japanese Encephalitis, Zika Virus, Chikungunya, West Nile Kunjin, and, most significantly, Dengue Virus, which are a few of them addressed in our dataset. These viruses are either currently or in the past and have caused severe human diseases in Australia. Over the last decade, all of these viruses have been linked to human illnesses. And this can be confirmed from the map above, where we can see that the dengue virus has the most significant infection rate of any virus. “With the increasing frequency of dengue virus introductions over the past decade, there has been some concern expressed that dengue might become endemic in the north-east of Australia.” (https://www1.health.gov.au/internet/main/publishing.nsf/Content/cda-pubs-cdi-1998-cdi2206-cdi2206a.htm)
+
+According to the map above, dengue has one of the greatest numbers of viruses entering Australia, with a total of 9,218 cases. Countries such as Indonesia (6,545 cases) and Thailand (1,387) exported almost 86% of the total number of dengue viruses in Australia. Another virus-like Chikungunya is the second most imported virus, with 241 cases imported from Indonesia and India (476 cases). In comparison, the West Nile Kunjin virus has one of the lowest numbers of occurrences in Australia, with only 6 cases reported. As a result, the nations with the most instances of the virus in Australia are Indonesia, Thailand, and India, which contribute 6,667, 1,367, and 591 cases, respectively.
+
+
+
+# How they spread within Australia
+
+After 25 years, epidemic dengue returned to north Queensland in 1981-82 and has increased in frequency since 1990. This is associated with the increase in global travel, which is a major factor in the emergence of infectious diseases. In parallel, these viruses have been spreading out from north Queensland, reaching the Northern Territory border in the west and towards the New South Wales border in the south.
+
+The first reported outbreak of Japanese encephalitis (JE) in the Australasian region occurred in the Torres Strait in 1995. Three cases were reported from Badu Island in the central Torres Strait, two of which were fatal.
+
+
+
+# Comparison of LA and IM
+
+There are eight different viruses in all that we are dealing with, five of which are classified as imported and five as locally transmitted. The reason for this is that both groups contain the dengue virus and the West Nile Kunjin virus. As a result, locally transmitted viruses are Ross River Virus, Barmah Forest Virus, Murray Valley Encephalitis Virus, Dengue Virus, and West Nile Kunjin. And for the foreign acquired viruses, we have Chikungunya, Japanese Encephalitis Virus, Zika Virus, Dengue Virus, and West Nile Kunjin Virus. 
+
+From the animation graph above, we can see that for locally transmitted viruses, Ross River Virus and Barmah Forest Virus are much higher than the other viruses, and in contrast to this, we have West Nile Kunjin Virus with the lowest sum incidence rate for virtually all the years. Moving on to the foreign-acquired viruses, we notice that Dengue Virus has been continuously high from 2007 to 2017, followed by the competition between Chikungunya and Japanese Encephalitis Virus. When it comes to imported viruses, the West Nile Kunjin Virus has the lowest occurrence rate for both categories.
+
+We discovered that the highest occurrence of locally transmitted viruses occurred in 2015, and the highest incidence of viruses acquired abroad occurred in 2016, after breaking down the data by year for the animation above. The prevalence of viruses acquired abroad is lowest in 2007, whereas that of locally transmitted viruses was lowest in 2016. It's interesting to note that 2013 has the second-highest total incidence rate for viruses that are acquired locally and abroad.
+
+
+
+# Blood donation rate
+
+## Statistical Analysis
+
+We performed some statistical analysis in order to uncover patterns, trends, and other significant details in the data. We specifically selected negative binomial regression, which is a technique very close to multiple regression. There is one difference, though: in negative binomial regression, the dependent variable follows the negative binomial. The variables can therefore be positive or negative integers. These regressions are one of the most popular modelling techniques for over-dispersed count outcome variables.
+
+Negative binomial regression can be used when the conditional variance is greater than the conditional mean, as is the case for over-dispersed count data. And as seen from the table below, the variance is not so much greater but yet justifies negative binomial regression.
+
+
+## Negative Binomial
+
+We conducted the regressions by keeping the donation rate as our predictor variable and the incidence rate as the dependent variable for all the models. In addition to several negative binomial regressions, we also used Poisson regression to see if the data contained count data, which are discrete data with non-negative integer values. Also, negative binomial regression shares many common assumptions with Poisson regression, such as linearity in model parameters, independence of individual observations, and the multiplicative effects of independent variables. 
+
+Negative Binomial (Weather) and Negative Binomial (Full Data) have additional parameters like weather conditions (rainfall, temperature, and humidity) and all variables respectively as their dependent variables. We discovered that expanding the number of parameters improves the AIC values of negative binomial regression. The Akaike information criterion is a metric used to evaluate the quality of a model. Low complexity and a good fit are indications of a model with a low AIC. As a result, we chose the basic negative binomial model (donation rate as our predictor variable and the incidence rate as the dependent variable) for further analysis.
+
+
+## Negative Binomial Summary
+
+The table below shows the summary statistics of the full data negative binomial.
+
++ Median: Because the median deviance residual is near to zero, our model is not biased in either way which means the outcome is neither over- nor underestimated).
+
++ Coefficients:
+
++ Null Deviance: It is implied by a low null deviation that the data can be adequately described by utilising the intercept alone. Consider utilising a few data-modelling features if the null deviance is minimal. If the null deviation is significant, then fitting the model with more than one parameter makes sense. 
+
++ Residual Deviance: A low residual deviation indicates that your trained model is suitable.
+
++ Degree of freedom: The residual deviation should be near to the degrees of freedom for a well-fitting model, which is not the case in this instance.
+
+
+## Under and overfitting of data
+
+The theoretical Negative Binomial fit is represented by the red curved line. The height indicates the gap between expected and observed numbers is "hanging" from each position on the bar. A hanging bar below 0 suggests underfitting, whereas a hanging bar above 0 indicates overfitting. And, because the bars do not lie in just about any direction, the data is a well-fitted model.
+
+
+
+# Effects of Weather Conditions
+
+Considerable attention has been drawn over the past few years to the possible effects of global warming on human health. Out of these infectious diseases, those most likely to be affected by global warming are diseases that are transmitted by insect vectors, especially mosquito-borne arboviruses. The importance of weather in the genesis of outbreaks of human arboviral disease in Australia has been widely recognised. In particular, heavy rainfall and flooding may result in outbreaks of these viruses. Let us have a deeper look at each weather condition below.
+
+
+## Role of Temperature
+
+## Role of Rainfall
+
+## Role of Humidity
+
+
+
+# Key Findings
+
+
+
+# Difficulties Faced
+
+
+
+# Conclusion
+
+
+
+# References
+
+
+
+
+

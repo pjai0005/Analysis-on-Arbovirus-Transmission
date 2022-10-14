@@ -220,7 +220,7 @@ animation <- fulldata %>%
   pivot_longer(cols = c(na_local_IR, na_imp_IR),
                names_to = "IR_Type",
                values_to = "IR") %>% 
-  select(Year, Virus_Name, Transmission, IR, Count) %>% 
+  dplyr::select(Year, Virus_Name, Transmission, IR, Count) %>% 
   group_by(Year, Transmission, Virus_Name ) %>% 
   summarise(IR = sum(IR, na.rm = TRUE),
             Count = sum(Count, na.rm = TRUE)) %>% 
