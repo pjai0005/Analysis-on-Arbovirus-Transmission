@@ -112,15 +112,15 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
 
 ####  Imported
 
-* CHIKV
+* Chikungunya
 
-* JEV
+* Japanese Encephalitis
 
-* ZIKV
+* Zika
 
-* DENV
+* Dengue
 
-* WNV
+* West Nile Kunjin
 
 
 ]
@@ -128,15 +128,15 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
 
 ####  Local
 
-* RRV
+* Ross River 
 
-* MVEV
+* Murray Valley Encephalitis
 
-* BFV
+* Barmah Forest
 
-* DENV
+* Dengue
 
-* WNV
+* West Nile Kunjin
 
 ]
 
@@ -195,7 +195,7 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
 
 1. Australian SA3 region Shape file as of 2011 from ABS
 
-2. World Shape file containing country borders for all 195 countries
+2. World Shape file containing country borders for all countries
 
 ]
 
@@ -209,9 +209,9 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
   * At Sea
   
 * Replaced country names like
-  * China (excludes SARs and Taiwan) → China
+  * China (excludes SARs) → China
   * Venezuela, Bolivarian Republic of → Venezuela
-  * United Kingdom, Channel Islands and Isle of Man → Hong Kong
+  * United Kingdom, Channel Islands and Isle of Man → United Kingdom
   
 * Checked for outliers – None found
 
@@ -276,8 +276,6 @@ class: center, middle, inverse
 
 * Transfusion transmitted virus infections occur due to blood donors with arbovirus infections
 
-* No clear relationship between SA3 regions, donation rate and incidence rate
-
 ]
 
 
@@ -334,11 +332,7 @@ class: center, middle, inverse
 .pull-left[
 * median deviance residual is almost zero, our model is **not biased.**
 
-* we are 15 standard deviations below the mean
-
 * Negative correlation between response and explanatory variables.
-
-* If `incidence rate` `r emo::ji("small_red_triangle_down")`, the `donation rate` also goes `r emo::ji("small_red_triangle_down")`
 ]
 
 
@@ -357,7 +351,7 @@ class: center, middle, inverse
 ## PCA Biplot
 
 .pull-left[
-* Donation Rate and Population are the most important contributors for the first PC
+* Donation Rate and Population are the most important contributors for PC 1
 
 * Population and donation rate are correlated
 
@@ -417,7 +411,7 @@ style="position:absolute; right:20px; top:80px;">
 ]
 
 ---
-
+#Weather Conditions
 ## Rainfall `r emo::ji("umbrella")`
 
 .panelset[
