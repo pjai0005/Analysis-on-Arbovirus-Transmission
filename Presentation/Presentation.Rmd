@@ -2,11 +2,11 @@
 title: "Arbovirus Transmission in Australia"
 subtitle: "ETC5543 Presentation"  
 author: 
-  - "Sahinya Akila"
-  - "Prachi Jaiswal"
+  - "Sahinya Akila (29201128)"
+  - "Prachi Jaiswal (32192673)"
 output:
   xaringan::moon_reader:
-    css: xaringan-themer.css
+    css: style.css
     nature:
       slideNumberFormat: "%current%"
       highlightStyle: github
@@ -28,348 +28,537 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r xaringan-themer, include=FALSE, warning=FALSE}
+```{r xaringan-themer, include=FALSE, warning=FALSE, echo=FALSE}
 library(xaringanthemer)
 # install.packages("devtools")
-#devtools::install_github("hadley/emo")
-
-# style_duo_accent(
-#   primary_color = "#1381B0",
-#   secondary_color = "#FF961C",
-#   inverse_header_color = "#FFFFFF"
-# )
-
-style_mono_accent(base_color = "#43418A")
+# devtools::install_github("hadley/emo")
 # xaringan::inf_mr()
 
+style_duo_accent(
+  primary_color = "#505680",
+  secondary_color = "#63698b",
+  inverse_header_color = "#d4c2b6"
+)
+
+xaringanExtra::use_panelset()
+
+xaringanExtra::style_panelset_tabs(
+  active_foreground = "#0051BA",
+  hover_foreground = "#d22",
+  font_family = "Roboto"
+)
 
 ```
 
-## Agenda `r emo::ji("pen")`
-
-Text can be **bold**, _italic_, ~~strikethrough~~, or `inline code`.
-
-[Link to another slide](#colors).
-
-### Lorem Ipsum
-
-Dolor imperdiet nostra sapien scelerisque praesent curae metus facilisis dignissim tortor. 
-Lacinia neque mollis nascetur neque urna velit bibendum. 
-Himenaeos suspendisse leo varius mus risus sagittis aliquet venenatis duis nec.
-
-- Dolor cubilia nostra nunc sodales
-
-- Consectetur aliquet mauris blandit
-
-- Ipsum dis nec porttitor urna sed
-
----
-name: colors
-
-## Colors
-
-.left-column[
-Text color
-
-[Link Color](#3)
-
-**Bold Color**
-
-_Italic Color_
-
-`Inline Code`
-]
-
-.right-column[
-Lorem ipsum dolor sit amet, [consectetur adipiscing elit (link)](#3), 
-sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-Erat nam at lectus urna.
-Pellentesque elit ullamcorper **dignissim cras tincidunt (bold)** lobortis feugiat. 
-_Eros donec ac odio tempor_ orci dapibus ultrices. 
-Id porta nibh venenatis cras sed felis eget velit aliquet.
-Aliquam id diam maecenas ultricies mi.
-Enim sit amet 
-`code_color("inline")`
-venenatis urna cursus eget nunc scelerisque viverra.
-]
-
----
-
-# Big Topic or Inverse Slides `#`
-
-## Slide Headings `##`
-
-### Sub-slide Headings `###`
-
-#### Bold Call-Out `####`
-
-This is a normal paragraph text. Only use header levels 1-4.
-
-##### Possible, but not recommended `#####`
-
-###### Definitely don't use h6 `######`
-
----
-
-# Left-Column Headings
-
-.left-column[
-## First
-
-## Second
-
-## Third
-]
-
-.right-column[
-Dolor quis aptent mus a dictum ultricies egestas.
-
-Amet egestas neque tempor fermentum proin massa!
-
-Dolor elementum fermentum pharetra lectus arcu pulvinar.
-]
-
----
-class: inverse center middle
-
-# Topic Changing Interstitial
-
---
-
-```
-class: inverse center middle
-```
-
----
-layout: true
-
-## Blocks
-
----
-
-### Blockquote
-
-> This is a blockquote following a header.
->
-> When something is important enough, you do it even if the odds are not in your favor.
-
----
-
-### Code Blocks
-
-#### R Code
-
-```{r eval=FALSE}
-ggplot(gapminder) +
-  aes(x = gdpPercap, y = lifeExp, size = pop, color = country) +
-  geom_point() +
-  facet_wrap(~year)
-```
-
-#### JavaScript
-
-```js
-var fun = function lang(l) {
-  dateformat.i18n = require('./lang/' + l)
-  return true;
-}
-```
-
----
-
-### More R Code
-
-```{r eval=FALSE}
-dplyr::starwars %>% dplyr::slice_sample(n = 4)
-```
-
----
-
-```{r message=TRUE, eval=requireNamespace("cli", quietly = TRUE)}
-cli::cli_alert_success("It worked!")
-```
-
---
-
-```{r message=TRUE}
-message("Just a friendly message")
-```
-
---
-
-```{r warning=TRUE}
-warning("This could be bad...")
-```
-
---
-
-```{r error=TRUE}
-stop("I hope you're sitting down for this")
-```
-
-
----
-layout: true
-
-## Tables
-
----
-exclude: `r if (requireNamespace("tibble", quietly=TRUE)) "false" else "true"`
-
-```{r eval=requireNamespace("tibble", quietly=TRUE)}
-tibble::as_tibble(mtcars)
-```
-
----
-
-```{r}
-knitr::kable(head(mtcars), format = 'html')
-```
-
----
-exclude: `r if (requireNamespace("DT", quietly=TRUE)) "false" else "true"`
-
-```{r eval=requireNamespace("DT", quietly=TRUE)}
-DT::datatable(head(mtcars), fillContainer = FALSE, options = list(pageLength = 4))
-```
-
----
-layout: true
-
-## Lists
-
----
-
-.pull-left[
-#### Here is an unordered list:
-
-*   Item foo
-*   Item bar
-*   Item baz
-*   Item zip
-]
-
-.pull-right[
-
-#### And an ordered list:
-
-1.  Item one
-1.  Item two
-1.  Item three
-1.  Item four
-]
-
----
-
-### And a nested list:
-
-- level 1 item
-  - level 2 item
-  - level 2 item
-    - level 3 item
-    - level 3 item
-- level 1 item
-  - level 2 item
-  - level 2 item
-  - level 2 item
-- level 1 item
-  - level 2 item
-  - level 2 item
-- level 1 item
-
----
-
-### Nesting an ol in ul in an ol
-
-- level 1 item (ul)
-  1. level 2 item (ol)
-  1. level 2 item (ol)
-    - level 3 item (ul)
-    - level 3 item (ul)
-- level 1 item (ul)
-  1. level 2 item (ol)
-  1. level 2 item (ol)
-    - level 3 item (ul)
-    - level 3 item (ul)
-  1. level 4 item (ol)
-  1. level 4 item (ol)
-    - level 3 item (ul)
-    - level 3 item (ul)
-- level 1 item (ul)
-
----
-layout: true
-
-## Plots
-
----
-
-```{r plot-example, eval=requireNamespace("ggplot2", quietly=TRUE)}
-library(ggplot2)
-(g <- ggplot(mpg) + aes(hwy, cty, color = class) + geom_point())
-```
-
----
-
-```{r plot-example-themed, eval=requireNamespace("showtext", quietly=TRUE) && requireNamespace("ggplot2", quietly=TRUE)}
-g + xaringanthemer::theme_xaringan(text_font_size = 16, title_font_size = 18) +
-  ggtitle("A Plot About Cars")
-```
-
-.footnote[Requires `{showtext}`]
-
----
-layout: false
-
-## Square image
-
-<center><img src="https://octodex.github.com/images/labtocat.png" alt="GithHub Octocat" height="400px" /></center>
-
-.footnote[GitHub Octocat]
-
----
-
-### Wide image
-
-![A wide image with a diagram of branching in git.](https://docs.github.com/assets/images/help/repository/branching.png)
-
-.footnote[Wide images scale to 100% slide width]
-
----
-
-## Two images
-
-.pull-left[
-![A GitHub Octocat, style "mother hubber"](https://octodex.github.com/images/motherhubbertocat.png)
-]
-
-.pull-right[
-![A GitHub Octocat, style "dinotcat"](https://octodex.github.com/images/dinotocat.png)
-]
-
----
-
-### Definition lists can be used with HTML syntax.
-
-<dl>
-<dt>Name</dt>
-<dd>Godzilla</dd>
-<dt>Born</dt>
-<dd>1952</dd>
-<dt>Birthplace</dt>
-<dd>Japan</dd>
-<dt>Color</dt>
-<dd>Green</dd>
-</dl>
-
----
 class: center, middle
 
-# Thanks!
+## Hi All
 
-Slides created via the R packages:
+![](https://media1.giphy.com/media/3bc9YL28QWi3pYzi1p/200w.webp?cid=ecf05e47k2unazdm58ss4pkeleyouynn7mrqksnp9bcw2m2k&rid=200w.webp&ct=g)
 
-[**xaringan**](https://github.com/yihui/xaringan)<br>
-[gadenbuie/xaringanthemer](https://github.com/gadenbuie/xaringanthemer)
+.footnote[
+Source: [Giphy](https://www.google.com/url?sa=i&url=https%3A%2F%2Fgiphy.com%2Fexplore%2Fhiiiii&psig=AOvVaw2Lm0h_EsjtoDP_NIV8X5pI&ust=1634298879350000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCNjAyNjsyfMCFQAAAAAdAAAAABAE)]
 
-The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](http://yihui.name/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
+
+---
+
+## Topics to be covered `r emo::ji("pen")`
+
+.pull-left[
+### `r emo::ji("small_orange_diamond")` About the Project
+
+### `r emo::ji("small_orange_diamond")` Analysis 
+
+### `r emo::ji("small_orange_diamond")` Walk through of App
+
+### `r emo::ji("small_orange_diamond")` Conclusion
+
+### `r emo::ji("small_orange_diamond")` Q&A
+]
+
+.pull-right[
+![](images/Arbovirus.gif)
+]
+
+---
+class: center, middle, inverse
+# About the Project
+
+---
+
+# About the Project
+
+.panelset[
+.panel[.panel-name[Project Aim `r emo::ji("target")`]
+
+`r emo::ji("mosquito")` About Dr. Elvina Viennet (Researcher at Redcross Lifeblood)
+
+  - Most of her research focuses on infectious diseases especially vector-borne diseases.
+  
+  
+  - Currently, she is doing a comprehensive study on arbovirus transmission in Australia
+  
+`r emo::ji("mosquito")` Our role was to create visualization to infer factors which influence Arbovirus Transmission
+
+
+]
+.panel[.panel-name[Arbovirus `r emo::ji("microbe")`]  
+
+.pull-left[
+
+Arbovirus is a term used to refer to a group of viruses that are transmitted by arthropod vectors. It covers infections spread by mosquitoes, ticks and fleas. 
+
+.pull-left[
+
+####  Imported
+
+* CHIKV
+
+* JEV
+
+* ZIKV
+
+* DENV
+
+* WNV
+
+
+]
+.pull-right[
+
+####  Local
+
+* RRV
+
+* MVEV
+
+* BFV
+
+* DENV
+
+* WNV
+
+]
+
+
+.pull-right[
+
+
+<img src="images/arbovirus.png"
+     width="400px" height="260px"
+     style="position:absolute; right:25px; top:150px;">
+     
+]
+
+]
+
+
+]
+
+.panel[.panel-name[SA3 Regions `r emo::ji("world_map")`]
+
+.pull-left[
+* They have been designed for the output of regional data. There were a total of 333 SA3 regions as of **2011**. 
+
+* Our data deals with **312** SA3 Regions
+
+* SA3 region boundaries are taken from 2011 census period
+]
+
+
+
+<a href="https://maps.abs.gov.au/">
+        <img src="images/SA3.png"
+     width="500px" height="350px"
+     style="position:absolute; right:70px; top:70px;">
+        <div class="caption">Image Source: Australian Bureau of Statistics</div>
+</a>
+
+]
+]
+
+
+---
+# Data `r emo::ji("floppy_disk")` 
+
+.panelset.sideways[
+
+.panel[.panel-name[Data Provided]  
+
+1. Dataset containing variables related to case count, incidence rate, donation rate, geographical information and weather conditions for the years 2007 - 2017
+  
+2. Dataset comprising of Imported Viruses, case counts and imported country names. 
+
+]
+
+.panel[.panel-name[Data Gathered]  
+
+1. Australian SA3 region Shape file as of 2011 from ABS
+
+2. World Shape file containing country borders for all 195 countries
+
+]
+
+.panel[.panel-name[Data Pre-processing]  
+
+* Found NA values in Donation Rate Column – Those rows were ignored
+
+* Removed values in country names like
+  * No data available
+  * Overseas - Country unknown
+  * At Sea
+  
+* Replaced country names like
+  * China (excludes SARs and Taiwan) → China
+  * Venezuela, Bolivarian Republic of → Venezuela
+  * United Kingdom, Channel Islands and Isle of Man → Hong Kong
+  
+* Checked for outliers – None found
+
+* Separated Imported and Local Cases based on Virus Name
+
+
+]
+]
+
+---
+class: center, middle, inverse
+# Analysis
+
+
+---
+
+# Imported Cases `r emo::ji("mosquito")` 
+
+.pull-left[
+* Dengue has the highest incidence rate because it is found in at least 100 tropical and sub-tropical countries around the world 
+
+* Transmission of Chikungunya Virus is also high because it is present in 60+ countries.
+
+* Spread of Zika Virus (ZIKV) started in 2012 and increased rapidly until 2016
+
+* West Nile Kunjin Virus (WNV) has the lowest incidence rate
+
+]
+
+
+.pull-right[
+<img src="images/gganim_imp.gif"
+     width="340px" height="290px">
+]
+---
+
+# Local Transmission `r emo::ji("mosquito")` 
+.pull-left[
+* Ross River virus has the highest incidence rate among its counterparts
+
+* Barmah Forest Virus (BFV) is only found in Australia and is also prevalent in all the States
+
+* Murray Valley Encephalitis Virus (MVEV) and West Nile Kunjin Virus (WNV) have the lowest incidence rates
+
+]
+
+
+.pull-right[
+<img src="images/gganim_local.gif"
+     width="340px" height="290px">
+]
+
+
+---
+
+# Blood Donation Rate `r emo::ji("syringe")` 
+
+.pull-left[
+* Blood donation for the years 2007 to 2017 obtained from Lifeblood
+
+* Data shows number of blood donations monthly by donor age, sex and location of residence
+
+* Transfusion transmitted virus infections occur due to blood donors with arbovirus infections
+
+* No clear relationship between SA3 regions, donation rate and incidence rate
+
+]
+
+
+.pull-right[
+
+<img src="images/DR.png"
+     width="600px" height="250px"
+     style="position:absolute; right:30px; top:210px;">
+
+]
+
+
+---
+# Statistical Analysis `r emo::ji("desktop_computer")` 
+
+### Negative Binomial
+
+.panelset.sideways[
+
+
+.panel[.panel-name[When to perform?]  
+.pull-left[
+* Negative Binomial is performed when the data is **over dispersed**.
+
+* The conditional variance exceeds the conditional mean.
+
+]
+.pull-right[
+![](images/mean.png)
+]
+]
+
+
+.panel[.panel-name[Different Models]
+
+.pull-left[
+* `donation rate` as our response variable and the `incidence rate` as the explanatory variable for all the models.
+
+* The Akaike Information Criterion is a metric used to evaluate the quality of a model. 
+]
+
+.pull-right[
+<img src="images/aic.png"
+     width="350px" height="130px"
+     style="position:absolute; right:50px; top:30px;">
+]
+
+<br>
+* Low complexity and a **good fit** are indications of a model with a **low AIC.**
+
+]
+
+.panel[.panel-name[Model Summary]
+.pull-left[
+* median deviance residual is almost zero, our model is **not biased.**
+
+* we are 15 standard deviations below the mean
+
+* Negative correlation between response and explanatory variables.
+
+* If `incidence rate` `r emo::ji("small_red_triangle_down")`, the `donation rate` also goes `r emo::ji("small_red_triangle_down")`
+]
+
+
+.pull-right[
+<img src="images/SummaryTable.png"
+     width="470px" height="350px"
+     style="position:absolute; right:10px; top:10px;">
+]
+]
+]
+
+
+---
+# Statistical Analysis `r emo::ji("computer")` 
+
+## PCA Biplot
+
+.pull-left[
+* Donation Rate and Population are the most important contributors for the first PC
+
+* Population and donation rate are correlated
+
+* Incidence Rate and Temperature are highly correlated
+]
+
+
+.pull-right[
+<img src="images/pca.png"
+     width="480px" height="400px"
+     style="position:absolute; right:70px; top:190px;">
+]
+
+---
+
+
+# Weather Conditions
+## Temperature `r emo::ji("thermometer")`
+
+.panelset[
+.panel[.panel-name[Overview]  
+.pull-left[
+
+- A positive correlation exists between average temperature and incidence rate.
+
+- Important behaviors such as blood-feeding and mating are also affected by temperature
+]
+
+<img src="images/temp.png"
+width="430px" height="300px"
+style="position:absolute; right:70px; top:70px;">
+]
+
+.panel[.panel-name[Map]
+.pull-left[
+- The temperature decreases gradually from North to South
+
+- No proper relation can be deduced from SA3 region and average temperature
+]
+
+<img src="images/temp_map.png"
+width="330px" height="300px"
+style="position:absolute; right:70px; top:100px;">
+]
+
+.panel[.panel-name[Graph]
+.pull-left[
+- There is no clear increase or decrease in average temperature and average incidence rate over time
+
+- Temperature has a significant influence on life history traits of vectors at both immature and adult life stages
+]
+
+<img src="images/temp_graph.png"
+width="330px" height="300px"
+style="position:absolute; right:20px; top:80px;">
+]
+]
+
+---
+
+## Rainfall `r emo::ji("umbrella")`
+
+.panelset[
+.panel[.panel-name[Overview]  
+.pull-left[
+- Rainfall and Incidence Rate show a positive correlation
+
+- Increases in rainfall can increase vector populations and transmission
+
+- This is due to increased number of water filled containers near dwelling
+]
+
+<img src="images/rain.png"
+width="380px" height="300px"
+style="position:absolute; right:20px; top:70px;">
+]
+
+.panel[.panel-name[Map]
+.pull-left[
+- Places like Cassowary Coast, Port Douglas (Coastal regions) have higher rainfall rate
+
+- No distinct relationship between rainfall, incidence rate and SA3 region
+]
+
+<img src="images/rain_map.png"
+width="315px" height="300px"
+style="position:absolute; right:70px; top:100px;">
+]
+
+.panel[.panel-name[Graph]
+.pull-left[
+- There is no clear increase or decrease in rainfall rate and average incidence rate over time
+
+- Drought and water scarcity can also increase vector populations if people begin to store water in containers around the home
+]
+
+<img src="images/rain_graph.png"
+width="315px" height="300px"
+style="position:absolute; right:20px; top:80px;">
+]
+]
+
+
+---
+
+# Weather Conditions
+
+## Humidity `r emo::ji("droplet")`
+
+.panelset[
+.panel[.panel-name[Overview]  
+.pull-left[
+
+- Negative correlation between humidity and incidence rate
+
+- However, mosquito's vector competence might get reduced, because of the diversion of available cellular resources for its own maintenance.
+
+- Few other studies also suggest that it is difficult to predict the actual effect of humidity on vector competence.
+
+]
+
+<img src="images/humid.png"
+width="430px" height="300px"
+style="position:absolute; right:70px; top:70px;">
+]
+
+.panel[.panel-name[Map]
+.pull-left[
+- Average humidity is high in coastal regions
+
+- Regions with higher humidity have lower incidence rates
+]
+
+<img src="images/humid_map.png"
+width="320px" height="300px"
+style="position:absolute; right:70px; top:100px;">
+]
+
+.panel[.panel-name[Graph]
+.pull-left[
+
+- There is no clear increase or decrease in humidity and average incidence rate over time
+
+
+- Egg production has shown to increase with increase in relative humidity
+]
+
+<img src="images/humid_graph.png"
+width="330px" height="300px"
+style="position:absolute; right:70px; top:80px;">
+]
+]
+
+ 
+
+---
+class: center, middle, inverse
+# Walkthrough of RShiny App
+
+
+---
+# Epilogue `r emo::ji("scroll")`
+
+`r emo::ji("pushpin")` Developed both leaflet and sf maps
+
+--
+
+`r emo::ji("pushpin")` Explored Negative Binomial Model
+
+--
+
+`r emo::ji("pushpin")` Improved our project management skills
+
+--
+
+`r emo::ji("pushpin")` Learnt to actively use GitHub in a more extensive manner
+
+--
+
+`r emo::ji("pushpin")` Refined our knowledge in processing of enormous datasets
+
+
+
+---
+class: center, inverse
+
+.pull-top[
+<br>
+<br>
+# Thank you
+]
+
+--
+
+.pull-bottom[
+
+<img src="https://media.tenor.com/X73EqPfwAfIAAAAC/minion-any-questions-question.gif"
+width="240px" height="300px"
+style="position:absolute; right:475px; top:250px;">
+]
+
+.footnote[
+Source: [Tenor](https://media.tenor.com/X73EqPfwAfIAAAAC/minion-any-questions-question.gif)]
+
