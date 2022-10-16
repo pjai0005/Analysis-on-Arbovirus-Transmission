@@ -99,7 +99,8 @@ shinyUI(fluidPage(includeCSS("www/theme.css")
                                )
                                , tabPanel("Donation Rate"
                                           , fluidRow(HTML('<img src="Donation.gif" width="100%" height="auto">')
-                                                     , HTML('<h2>Donation Rate by SA3 Region</h2>'))
+                                                     , HTML('<h2>Donation Rate by SA3 Region</h2><br>
+                                                     <p>Blood donation for the years 2007 to 2017 obtained from Lifeblood. Data shows number of blood donations monthly by donor age, sex and location of residence. Transfusion transmitted virus infections occur due to blood donors with arbovirus infections. No clear relationship between SA3 regions and donation rate</p>'))
                                           , fluidRow(column(width = 5, load_spinner(uiOutput("dr_map")))
                                                      ,column(width = 2
                                                              , sliderInput("dr_date", "Date Range"
@@ -184,9 +185,10 @@ shinyUI(fluidPage(includeCSS("www/theme.css")
                                                flooding may result in outbreaks of these viruses. Let us have look at each weather condition below.</p>'),
                                           
                                           tabsetPanel(
-                                            tabPanel("Temperature", weather_cond_ui("Temperature")),
-                                            tabPanel("Rainfall", weather_cond_ui("Rainfall")),
-                                            tabPanel("Humidity", weather_cond_ui("Humidity"))
+                                            tabPanel("Temperature", weather_cond_ui("Temperature"), HTML('<br><p>A positive correlation exists between average temperature and incidence rate. Important behaviors such as blood-feeding and mating are also affected by temperature. The temperature decreases gradually from North to South. No proper relation can be deduced from SA3 region and average temperature. There is no clear increase or decrease in average temperature and average incidence rate over time. Temperature has a significant influence on life history traits of vectors at both immature and adult life stages</p>')),
+                                            tabPanel("Rainfall", weather_cond_ui("Rainfall"), HTML('<br><p>Rainfall and Incidence Rate show a positive correlation. Increases in rainfall can increase vector populations and transmission. This is due to increased number of water filled containers near dwelling. Places like Cassowary Coast, Port Douglas (Coastal regions) have higher rainfall rate. No distinct relationship between rainfall, incidence rate and SA3 region. There is no clear increase or decrease in rainfall rate and average incidence rate over time. Drought and water scarcity can also increase vector populations if people begin to store water in containers around the home</p>')),
+                                            tabPanel("Humidity", weather_cond_ui("Humidity"),
+                                                     HTML("<br><p>Negative correlation between humidity and incidence rate. However, mosquito's vector competence might get reduced, because of the diversion of available cellular resources for its own maintenance. Few other studies also suggest that it is difficult to predict the actual effect of humidity on vector competence. Average humidity is high in coastal regions. Regions with higher humidity have lower incidence rates. There is no clear increase or decrease in humidity and average incidence rate over time. Egg production has shown to increase with increase in relative humidity</p>"))
                                           ))
                                , footer = HTML('<div class = "footer">©2021-2022 Australian Red Cross Lifeblood</div>')
                   )
