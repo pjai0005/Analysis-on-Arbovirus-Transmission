@@ -3,19 +3,12 @@
   <head>
     <title>Arbovirus Transmission in Australia</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Sahinya Akila" />
-    <meta name="author" content="Prachi Jaiswal" />
+    <meta name="author" content="Sahinya Akila (29201128)" />
+    <meta name="author" content="Prachi Jaiswal (32192673)" />
     <script src="Presentation_files/header-attrs/header-attrs.js"></script>
-    <script src="Presentation_files/htmlwidgets/htmlwidgets.js"></script>
-    <link href="Presentation_files/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
-    <script src="Presentation_files/datatables-binding/datatables.js"></script>
-    <script src="Presentation_files/jquery/jquery-3.6.0.min.js"></script>
-    <link href="Presentation_files/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
-    <link href="Presentation_files/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
-    <script src="Presentation_files/dt-core/js/jquery.dataTables.min.js"></script>
-    <link href="Presentation_files/crosstalk/css/crosstalk.min.css" rel="stylesheet" />
-    <script src="Presentation_files/crosstalk/js/crosstalk.min.js"></script>
-    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link href="Presentation_files/panelset/panelset.css" rel="stylesheet" />
+    <script src="Presentation_files/panelset/panelset.js"></script>
+    <link rel="stylesheet" href="style.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
@@ -28,10 +21,10 @@ class: center, middle, inverse, title-slide
 ## ETC5543 Presentation
 ]
 .author[
-### Sahinya Akila
+### Sahinya Akila (29201128)
 ]
 .author[
-### Prachi Jaiswal
+### Prachi Jaiswal (32192673)
 ]
 
 ---
@@ -41,490 +34,476 @@ class: center, middle, inverse, title-slide
 
 
 
-## Agenda 🖊
-
-Text can be **bold**, _italic_, ~~strikethrough~~, or `inline code`.
-
-[Link to another slide](#colors).
-
-### Lorem Ipsum
-
-Dolor imperdiet nostra sapien scelerisque praesent curae metus facilisis dignissim tortor. 
-Lacinia neque mollis nascetur neque urna velit bibendum. 
-Himenaeos suspendisse leo varius mus risus sagittis aliquet venenatis duis nec.
-
-- Dolor cubilia nostra nunc sodales
-
-- Consectetur aliquet mauris blandit
-
-- Ipsum dis nec porttitor urna sed
-
----
-name: colors
-
-## Colors
-
-.left-column[
-Text color
-
-[Link Color](#3)
-
-**Bold Color**
-
-_Italic Color_
-
-`Inline Code`
-]
-
-.right-column[
-Lorem ipsum dolor sit amet, [consectetur adipiscing elit (link)](#3), 
-sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-Erat nam at lectus urna.
-Pellentesque elit ullamcorper **dignissim cras tincidunt (bold)** lobortis feugiat. 
-_Eros donec ac odio tempor_ orci dapibus ultrices. 
-Id porta nibh venenatis cras sed felis eget velit aliquet.
-Aliquam id diam maecenas ultricies mi.
-Enim sit amet 
-`code_color("inline")`
-venenatis urna cursus eget nunc scelerisque viverra.
-]
-
----
-
-# Big Topic or Inverse Slides `#`
-
-## Slide Headings `##`
-
-### Sub-slide Headings `###`
-
-#### Bold Call-Out `####`
-
-This is a normal paragraph text. Only use header levels 1-4.
-
-##### Possible, but not recommended `#####`
-
-###### Definitely don't use h6 `######`
-
----
-
-# Left-Column Headings
-
-.left-column[
-## First
-
-## Second
-
-## Third
-]
-
-.right-column[
-Dolor quis aptent mus a dictum ultricies egestas.
-
-Amet egestas neque tempor fermentum proin massa!
-
-Dolor elementum fermentum pharetra lectus arcu pulvinar.
-]
-
----
-class: inverse center middle
-
-# Topic Changing Interstitial
-
---
-
-```
-class: inverse center middle
-```
-
----
-layout: true
-
-## Blocks
-
----
-
-### Blockquote
-
-&gt; This is a blockquote following a header.
-&gt;
-&gt; When something is important enough, you do it even if the odds are not in your favor.
-
----
-
-### Code Blocks
-
-#### R Code
-
-
-```r
-ggplot(gapminder) +
-  aes(x = gdpPercap, y = lifeExp, size = pop, color = country) +
-  geom_point() +
-  facet_wrap(~year)
-```
-
-#### JavaScript
-
-```js
-var fun = function lang(l) {
-  dateformat.i18n = require('./lang/' + l)
-  return true;
-}
-```
-
----
-
-### More R Code
-
-
-```r
-dplyr::starwars %&gt;% dplyr::slice_sample(n = 4)
-```
-
----
-
-
-```r
-cli::cli_alert_success("It worked!")
-```
-
-```
-## ✔ It worked!
-```
-
---
-
-
-```r
-message("Just a friendly message")
-```
-
-```
-## Just a friendly message
-```
-
---
-
-
-```r
-warning("This could be bad...")
-```
-
-```
-## Warning: This could be bad...
-```
-
---
-
-
-```r
-stop("I hope you're sitting down for this")
-```
-
-```
-## Error in eval(expr, envir, enclos): I hope you're sitting down for this
-```
-
-
----
-layout: true
-
-## Tables
-
----
-exclude: false
-
-
-```r
-tibble::as_tibble(mtcars)
-```
-
-```
-## # A tibble: 32 × 11
-##      mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
-##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-##  1  21       6  160    110  3.9   2.62  16.5     0     1     4     4
-##  2  21       6  160    110  3.9   2.88  17.0     0     1     4     4
-##  3  22.8     4  108     93  3.85  2.32  18.6     1     1     4     1
-##  4  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
-##  5  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
-##  6  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
-##  7  14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
-##  8  24.4     4  147.    62  3.69  3.19  20       1     0     4     2
-##  9  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
-## 10  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
-## # … with 22 more rows
-```
-
----
-
-
-```r
-knitr::kable(head(mtcars), format = 'html')
-```
-
-&lt;table&gt;
- &lt;thead&gt;
-  &lt;tr&gt;
-   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; mpg &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; cyl &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; disp &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; hp &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; drat &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; wt &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; qsec &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; vs &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; am &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; gear &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; carb &lt;/th&gt;
-  &lt;/tr&gt;
- &lt;/thead&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; Mazda RX4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 21.0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 160 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 110 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.90 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 2.620 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 16.46 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; Mazda RX4 Wag &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 21.0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 160 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 110 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.90 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 2.875 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 17.02 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; Datsun 710 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 22.8 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 108 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 93 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.85 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 2.320 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 18.61 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; Hornet 4 Drive &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 21.4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 258 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 110 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.08 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.215 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 19.44 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; Hornet Sportabout &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 18.7 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 360 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 175 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.15 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.440 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 17.02 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:left;"&gt; Valiant &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 18.1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 225 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 105 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 2.76 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.460 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 20.22 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-
----
-exclude: false
-
-
-```r
-DT::datatable(head(mtcars), fillContainer = FALSE, options = list(pageLength = 4))
-```
-
-<div id="htmlwidget-b2085ef60c7a310ac95b" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-b2085ef60c7a310ac95b">{"x":{"filter":"none","vertical":false,"fillContainer":false,"data":[["Mazda RX4","Mazda RX4 Wag","Datsun 710","Hornet 4 Drive","Hornet Sportabout","Valiant"],[21,21,22.8,21.4,18.7,18.1],[6,6,4,6,8,6],[160,160,108,258,360,225],[110,110,93,110,175,105],[3.9,3.9,3.85,3.08,3.15,2.76],[2.62,2.875,2.32,3.215,3.44,3.46],[16.46,17.02,18.61,19.44,17.02,20.22],[0,0,1,1,0,1],[1,1,1,0,0,0],[4,4,4,3,3,3],[4,4,1,1,2,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>mpg<\/th>\n      <th>cyl<\/th>\n      <th>disp<\/th>\n      <th>hp<\/th>\n      <th>drat<\/th>\n      <th>wt<\/th>\n      <th>qsec<\/th>\n      <th>vs<\/th>\n      <th>am<\/th>\n      <th>gear<\/th>\n      <th>carb<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":4,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8,9,10,11]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[4,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
-
----
-layout: true
-
-## Lists
-
----
-
-.pull-left[
-#### Here is an unordered list:
-
-*   Item foo
-*   Item bar
-*   Item baz
-*   Item zip
-]
-
-.pull-right[
-
-#### And an ordered list:
-
-1.  Item one
-1.  Item two
-1.  Item three
-1.  Item four
-]
-
----
-
-### And a nested list:
-
-- level 1 item
-  - level 2 item
-  - level 2 item
-    - level 3 item
-    - level 3 item
-- level 1 item
-  - level 2 item
-  - level 2 item
-  - level 2 item
-- level 1 item
-  - level 2 item
-  - level 2 item
-- level 1 item
-
----
-
-### Nesting an ol in ul in an ol
-
-- level 1 item (ul)
-  1. level 2 item (ol)
-  1. level 2 item (ol)
-    - level 3 item (ul)
-    - level 3 item (ul)
-- level 1 item (ul)
-  1. level 2 item (ol)
-  1. level 2 item (ol)
-    - level 3 item (ul)
-    - level 3 item (ul)
-  1. level 4 item (ol)
-  1. level 4 item (ol)
-    - level 3 item (ul)
-    - level 3 item (ul)
-- level 1 item (ul)
-
----
-layout: true
-
-## Plots
-
----
-
-
-```r
-library(ggplot2)
-(g &lt;- ggplot(mpg) + aes(hwy, cty, color = class) + geom_point())
-```
-
-&lt;img src="Presentation_files/figure-html/plot-example-1.png" width="100%" /&gt;
-
----
-
-
-```r
-g + xaringanthemer::theme_xaringan(text_font_size = 16, title_font_size = 18) +
-  ggtitle("A Plot About Cars")
-```
-
-&lt;img src="Presentation_files/figure-html/plot-example-themed-1.png" width="100%" /&gt;
-
-.footnote[Requires `{showtext}`]
-
----
-layout: false
-
-## Square image
-
-&lt;center&gt;&lt;img src="https://octodex.github.com/images/labtocat.png" alt="GithHub Octocat" height="400px" /&gt;&lt;/center&gt;
-
-.footnote[GitHub Octocat]
-
----
-
-### Wide image
-
-![A wide image with a diagram of branching in git.](https://docs.github.com/assets/images/help/repository/branching.png)
-
-.footnote[Wide images scale to 100% slide width]
-
----
-
-## Two images
-
-.pull-left[
-![A GitHub Octocat, style "mother hubber"](https://octodex.github.com/images/motherhubbertocat.png)
-]
-
-.pull-right[
-![A GitHub Octocat, style "dinotcat"](https://octodex.github.com/images/dinotocat.png)
-]
-
----
-
-### Definition lists can be used with HTML syntax.
-
-&lt;dl&gt;
-&lt;dt&gt;Name&lt;/dt&gt;
-&lt;dd&gt;Godzilla&lt;/dd&gt;
-&lt;dt&gt;Born&lt;/dt&gt;
-&lt;dd&gt;1952&lt;/dd&gt;
-&lt;dt&gt;Birthplace&lt;/dt&gt;
-&lt;dd&gt;Japan&lt;/dd&gt;
-&lt;dt&gt;Color&lt;/dt&gt;
-&lt;dd&gt;Green&lt;/dd&gt;
-&lt;/dl&gt;
-
----
 class: center, middle
 
-# Thanks!
+## Hi All
 
-Slides created via the R packages:
+![](https://media1.giphy.com/media/3bc9YL28QWi3pYzi1p/200w.webp?cid=ecf05e47k2unazdm58ss4pkeleyouynn7mrqksnp9bcw2m2k&amp;rid=200w.webp&amp;ct=g)
 
-[**xaringan**](https://github.com/yihui/xaringan)&lt;br&gt;
-[gadenbuie/xaringanthemer](https://github.com/gadenbuie/xaringanthemer)
+.footnote[
+Source: [Giphy](https://www.google.com/url?sa=i&amp;url=https%3A%2F%2Fgiphy.com%2Fexplore%2Fhiiiii&amp;psig=AOvVaw2Lm0h_EsjtoDP_NIV8X5pI&amp;ust=1634298879350000&amp;source=images&amp;cd=vfe&amp;ved=0CAsQjRxqFwoTCNjAyNjsyfMCFQAAAAAdAAAAABAE)]
 
-The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](http://yihui.name/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
+
+---
+
+## Topics to be covered 🖊
+
+.pull-left[
+### 🔸 About the Project
+
+### 🔸 Analysis 
+
+### 🔸 Walk through of App
+
+### 🔸 Conclusion
+
+### 🔸 Q&amp;A
+]
+
+.pull-right[
+![](images/Arbovirus.gif)
+]
+
+---
+class: center, middle, inverse
+# About the Project
+
+---
+
+# About the Project
+
+.panelset[
+.panel[.panel-name[Project Aim 🎯]
+
+🦟 About Dr. Elvina Viennet (Researcher at Redcross Lifeblood)
+
+  - Most of her research focuses on infectious diseases especially vector-borne diseases.
+  
+  
+  - Currently, she is doing a comprehensive study on arbovirus transmission in Australia
+  
+🦟 Our role was to create visualization to infer factors which influence Arbovirus Transmission
+
+
+]
+.panel[.panel-name[Arbovirus 🦠]  
+
+.pull-left[
+
+Arbovirus is a term used to refer to a group of viruses that are transmitted by arthropod vectors. It covers infections spread by mosquitoes, ticks and fleas. 
+
+.pull-left[
+
+####  Imported
+
+* CHIKV
+
+* JEV
+
+* ZIKV
+
+* DENV
+
+* WNV
+
+
+]
+.pull-right[
+
+####  Local
+
+* RRV
+
+* MVEV
+
+* BFV
+
+* DENV
+
+* WNV
+
+]
+
+
+.pull-right[
+
+
+&lt;img src="images/arbovirus.png"
+     width="400px" height="260px"
+     style="position:absolute; right:25px; top:150px;"&gt;
+     
+]
+
+]
+
+
+]
+
+.panel[.panel-name[SA3 Regions 🗺]
+
+.pull-left[
+* They have been designed for the output of regional data. There were a total of 333 SA3 regions as of **2011**. 
+
+* Our data deals with **312** SA3 Regions
+
+* SA3 region boundaries are taken from 2011 census period
+]
+
+
+
+&lt;a href="https://maps.abs.gov.au/"&gt;
+        &lt;img src="images/SA3.png"
+     width="500px" height="350px"
+     style="position:absolute; right:70px; top:70px;"&gt;
+        &lt;div class="caption"&gt;Image Source: Australian Bureau of Statistics&lt;/div&gt;
+&lt;/a&gt;
+
+]
+]
+
+
+---
+# Data 💾 
+
+.panelset.sideways[
+
+.panel[.panel-name[Data Provided]  
+
+1. Dataset containing variables related to case count, incidence rate, donation rate, geographical information and weather conditions for the years 2007 - 2017
+  
+2. Dataset comprising of Imported Viruses, case counts and imported country names. 
+
+]
+
+.panel[.panel-name[Data Gathered]  
+
+1. Australian SA3 region Shape file as of 2011 from ABS
+
+2. World Shape file containing country borders for all 195 countries
+
+]
+
+.panel[.panel-name[Data Pre-processing]  
+
+* Found NA values in Donation Rate Column – Those rows were ignored
+
+* Removed values in country names like
+  * No data available
+  * Overseas - Country unknown
+  * At Sea
+  
+* Replaced country names like
+  * China (excludes SARs and Taiwan) → China
+  * Venezuela, Bolivarian Republic of → Venezuela
+  * United Kingdom, Channel Islands and Isle of Man → Hong Kong
+  
+* Checked for outliers – None found
+
+* Separated Imported and Local Cases based on Virus Name
+
+
+]
+]
+
+---
+class: center, middle, inverse
+# Analysis
+
+
+---
+
+# Imported Cases 🦟 
+
+.pull-left[
+* Dengue has the highest incidence rate because it is found in at least 100 tropical and sub-tropical countries around the world 
+
+* Transmission of Chikungunya Virus is also high because it is present in 60+ countries.
+
+* Spread of Zika Virus (ZIKV) started in 2012 and increased rapidly until 2016
+
+* West Nile Kunjin Virus (WNV) has the lowest incidence rate
+
+]
+
+
+.pull-right[
+&lt;img src="images/gganim_imp.gif"
+     width="340px" height="290px"&gt;
+]
+---
+
+# Local Transmission 🦟 
+.pull-left[
+* Ross River virus has the highest incidence rate among its counterparts
+
+* Barmah Forest Virus (BFV) is only found in Australia and is also prevalent in all the States
+
+* Murray Valley Encephalitis Virus (MVEV) and West Nile Kunjin Virus (WNV) have the lowest incidence rates
+
+]
+
+
+.pull-right[
+&lt;img src="images/gganim_local.gif"
+     width="340px" height="290px"&gt;
+]
+
+
+---
+
+# Blood Donation Rate 💉 
+
+.pull-left[
+* Blood donation for the years 2007 to 2017 obtained from Lifeblood
+
+* Data shows number of blood donations monthly by donor age, sex and location of residence
+
+* Transfusion transmitted virus infections occur due to blood donors with arbovirus infections
+
+* No clear relationship between SA3 regions, donation rate and incidence rate
+
+]
+
+
+.pull-right[
+
+&lt;img src="images/DR.png"
+     width="600px" height="250px"
+     style="position:absolute; right:30px; top:210px;"&gt;
+
+]
+
+
+---
+# Statistical Analysis 🖥 
+
+### Negative Binomial
+
+.panelset.sideways[
+
+
+.panel[.panel-name[When to perform?]  
+.pull-left[
+* Negative Binomial is performed when the data is **over dispersed**.
+
+* The conditional variance exceeds the conditional mean.
+
+]
+.pull-right[
+![](images/mean.png)
+]
+]
+
+
+.panel[.panel-name[Different Models]
+
+.pull-left[
+* `donation rate` as our response variable and the `incidence rate` as the explanatory variable for all the models.
+
+* The Akaike Information Criterion is a metric used to evaluate the quality of a model. 
+]
+
+.pull-right[
+&lt;img src="images/aic.png"
+     width="350px" height="130px"
+     style="position:absolute; right:50px; top:30px;"&gt;
+]
+
+&lt;br&gt;
+* Low complexity and a **good fit** are indications of a model with a **low AIC.**
+
+]
+
+.panel[.panel-name[Model Summary]
+.pull-left[
+* median deviance residual is almost zero, our model is **not biased.**
+
+* we are 15 standard deviations below the mean
+
+* Negative correlation between response and explanatory variables.
+
+* If `incidence rate` 🔻, the `donation rate` also goes 🔻
+]
+
+
+.pull-right[
+&lt;img src="images/SummaryTable.png"
+     width="470px" height="350px"
+     style="position:absolute; right:10px; top:10px;"&gt;
+]
+]
+]
+
+
+---
+# Statistical Analysis 💻 
+
+## PCA Biplot
+
+.pull-left[
+* Donation Rate and Population are the most important contributors for the first PC
+
+* Population and donation rate are correlated
+
+* Incidence Rate and Temperature are highly correlated
+]
+
+
+.pull-right[
+&lt;img src="images/pca.png"
+     width="480px" height="400px"
+     style="position:absolute; right:70px; top:190px;"&gt;
+]
+
+---
+
+
+# Weather Conditions
+
+## Rainfall ☂️
+
+.panelset[
+.panel[.panel-name[Overview]  
+.pull-left[
+- Rainfall and Incidence Rate show a positive correlation
+
+- Increases in rainfall can increase vector populations and transmission
+
+- This is due to increased number of water filled containers near dwelling
+]
+
+&lt;img src="images/rain.png"
+width="380px" height="300px"
+style="position:absolute; right:20px; top:70px;"&gt;
+]
+
+.panel[.panel-name[Map]
+.pull-left[
+- Places like Cassowary Coast, Port Douglas (Coastal regions) have higher rainfall rate
+
+- No distinct relationship between rainfall, incidence rate and SA3 region
+]
+
+&lt;img src="images/rain_map.png"
+width="315px" height="300px"
+style="position:absolute; right:70px; top:100px;"&gt;
+]
+
+.panel[.panel-name[Graph]
+.pull-left[
+- There is no clear increase or decrease in rainfall rate and average incidence rate over time
+
+- Drought and water scarcity can also increase vector populations if people begin to store water in containers around the home
+]
+
+&lt;img src="images/rain_graph.png"
+width="315px" height="300px"
+style="position:absolute; right:20px; top:80px;"&gt;
+]
+]
+
+
+---
+
+# Weather Conditions
+
+## Humidity 💧
+
+.panelset[
+.panel[.panel-name[Overview]  
+.pull-left[
+
+- Negative correlation between humidity and incidence rate
+
+- However, mosquito's vector competence might get reduced, because of the diversion of available cellular resources for its own maintenance.
+
+- Few other studies also suggest that it is difficult to predict the actual effect of humidity on vector competence.
+
+]
+
+&lt;img src="images/humid.png"
+width="430px" height="300px"
+style="position:absolute; right:70px; top:70px;"&gt;
+]
+
+.panel[.panel-name[Map]
+.pull-left[
+- Average humidity is high in coastal regions
+
+- Regions with higher humidity have lower incidence rates
+]
+
+&lt;img src="images/humid_map.png"
+width="320px" height="300px"
+style="position:absolute; right:70px; top:100px;"&gt;
+]
+
+.panel[.panel-name[Graph]
+.pull-left[
+
+- There is no clear increase or decrease in humidity and average incidence rate over time
+
+
+- Egg production has shown to increase with increase in relative humidity
+]
+
+&lt;img src="images/humid_graph.png"
+width="330px" height="300px"
+style="position:absolute; right:70px; top:80px;"&gt;
+]
+]
+
+ 
+
+---
+class: center, middle, inverse
+# Walkthrough of RShiny App
+
+
+---
+# Epilogue 📜
+
+📌 Developed both leaflet and sf maps
+
+--
+
+📌 Explored Negative Binomial Model
+
+--
+
+📌 Improved our project management skills
+
+--
+
+📌 Learnt to actively use GitHub in a more extensive manner
+
+--
+
+📌 Refined our knowledge in processing of enormous datasets
+
+
+
+---
+class: center, inverse
+
+.pull-top[
+&lt;br&gt;
+&lt;br&gt;
+# Thank you
+]
+
+--
+
+.pull-bottom[
+
+&lt;img src="https://media.tenor.com/X73EqPfwAfIAAAAC/minion-any-questions-question.gif"
+width="240px" height="300px"
+style="position:absolute; right:475px; top:250px;"&gt;
+]
+
+.footnote[
+Source: [Tenor](https://media.tenor.com/X73EqPfwAfIAAAAC/minion-any-questions-question.gif)]
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

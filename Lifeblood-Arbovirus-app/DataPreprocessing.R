@@ -120,14 +120,16 @@ temperature_map_data <- full_data %>%
   group_by(SA3_NAME_2011, Virus_name) %>% 
   summarise(Max_temp = round(mean(meanMaxTavg), 2),
             Min_temp = round(mean(meanMinTavg), 2),
-            `Average Temperature` = round((Max_temp+Min_temp)/2, 2))
+            `Average Temperature` = round((Max_temp+Min_temp)/2, 2),
+            incidece_rate = round(mean(Value, na.rm = TRUE), 2))
 
 # Humidity map data
 humidity_map_data <- full_data %>% 
   group_by(SA3_NAME_2011, Virus_name) %>% 
   summarise(Max_humd = round(mean(meanRHTMaxavg), 2),
             Min_humd = round(mean(meanRHTMinavg), 2),
-            `Average Humidity` = round((Max_humd+Min_humd)/2, 2))
+            `Average Humidity` = round((Max_humd+Min_humd)/2, 2),
+            incidece_rate = round(mean(Value, na.rm = TRUE), 2))
 
 weather_graph <- full_data%>% 
   filter(str_detect(Type, "IR")) %>% 
@@ -141,7 +143,8 @@ weather_graph <- full_data%>%
 
 rain_map_data <- full_data %>% 
   group_by(SA3_NAME_2011, Virus_name) %>% 
-  summarise(Rainfall = round(mean(Rainavg), 2))
+  summarise(Rainfall = round(mean(Rainavg), 2),
+            incidece_rate = round(mean(Value, na.rm = TRUE), 2))
 
 # 3d weather lm
 weather_data_3d <- full_data %>% 

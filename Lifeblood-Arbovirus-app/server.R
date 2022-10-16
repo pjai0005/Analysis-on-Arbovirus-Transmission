@@ -157,7 +157,8 @@ shinyServer(function(input, output, session) {
       filter (format(Year, format = "%Y") >= input$dr_date[1], 
               format(Year, format = "%Y") <= input$dr_date[2]) %>% 
       group_by(SA3_NAME_2011) %>%
-      summarise(avg_donation_rate = mean(donationrate1000))
+      summarise(avg_donation_rate = mean(donationrate1000),
+                avg_incidence_rate = mean(Value, na.rm = TRUE))
     
     if (length(data) != 0){
       renderLeaflet({
@@ -165,7 +166,8 @@ shinyServer(function(input, output, session) {
         
         pal <- colorNumeric("RdYlGn", data$avg_donation_rate)
         content <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",data$SA3_NAME_2011, "<br>",
-                          "<b>Avg. Donation Rate: </b>", round(data$avg_donation_rate, 2))
+                          "<b>Avg. Donation Rate: </b>", round(data$avg_donation_rate, 2),
+                          "<br><b> Avg. Incidence Rate: </b>", round(data$avg_incidence_rate),2)
         data %>%
           leaflet() %>%
           addTiles() %>%
@@ -206,7 +208,7 @@ shinyServer(function(input, output, session) {
         shapefile_temp@data <- shapefile_temp@data %>% replace(is.na(.), 0)
         
         content_temp <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",shapefile_temp$SA3_NAME_2011, "<br>",
-                               "<b>Avg. Incidence Rate: </b>", round(shapefile_temp$Max_temp, 2))
+                               "<b>Avg. Temperature: </b>", round(shapefile_temp$Max_temp, 2), "<br><b>Incidence Rate: </b>", shapefile_temp$incidece_rate)
         
         pal_temp <- colorNumeric("RdBu", temperature_map_data$Max_temp, reverse = TRUE)
         
@@ -271,7 +273,7 @@ shinyServer(function(input, output, session) {
         shapefile_temp@data <- shapefile_temp@data %>% replace(is.na(.), 0)
         
         content_temp <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",shapefile_temp$SA3_NAME_2011, "<br>",
-                               "<b>Avg. Incidence Rate: </b>", round(shapefile_temp$Rainfall, 2))
+                               "<b>Avg. Incidence Rate: </b>", round(shapefile_temp$Rainfall, 2), "<br><b>Incidence Rate: </b>", shapefile_temp$incidece_rate)
         
         pal_temp <- colorNumeric("RdBu", map_data$Rainfall, reverse = TRUE)
         
@@ -337,7 +339,7 @@ shinyServer(function(input, output, session) {
         shapefile_temp@data <- shapefile_temp@data %>% replace(is.na(.), 0)
         
         content_temp <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",shapefile_temp$SA3_NAME_2011, "<br>",
-                               "<b>Avg. Incidence Rate: </b>", round(shapefile_temp$Max_humd, 2))
+                               "<b>Avg. Incidence Rate: </b>", round(shapefile_temp$Max_humd, 2), "<br><b>Incidence Rate: </b>", shapefile_temp$incidece_rate)
         
         pal_temp <- colorNumeric("RdBu", humidity_map_data$Max_humd, reverse = TRUE)
         
