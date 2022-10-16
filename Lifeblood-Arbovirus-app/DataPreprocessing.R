@@ -129,6 +129,11 @@ humidity_map_data <- full_data %>%
             Min_humd = round(mean(meanRHTMinavg), 2),
             `Average Humidity` = round((Max_humd+Min_humd)/2, 2))
 
+# Rainfall map data
+rain_map_data <- full_data %>% 
+  group_by(SA3_NAME_2011, Virus_name) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2))
+
 weather_graph <- full_data%>% 
   filter(str_detect(Type, "IR")) %>% 
   group_by(Year, Virus_name) %>% 
@@ -139,22 +144,6 @@ weather_graph <- full_data%>%
   pivot_longer(cols = -c('Year', 'Virus_name'), 
                names_to = "Type", values_to = "Value")
 
-rain_map_data <- full_data %>% 
-  group_by(SA3_NAME_2011, Virus_name) %>% 
-  summarise(Rainfall = round(mean(Rainavg), 2))
-
-# 3d weather lm
-weather_data_3d <- full_data %>% 
-  filter(str_detect(Type, "IR")) %>% 
-  group_by(Year) %>% 
-  summarise(Rainfall = round(mean(Rainavg), 2),
-            Min_Temprature = round(mean(meanMinTavg), 2),
-            Max_Temprature = round(mean(meanMaxTavg), 2),
-            Min_Humidity = round(mean(meanRHTMinavg), 2),
-            Max_Humidity = round(mean(meanRHTMaxavg), 2),
-            `Average Humidity` = round((Min_Humidity+Max_Humidity)/2, 2),
-            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
-            `Incidence Percent` = round(mean(Value, na.rm = TRUE), 2)*100)
 
 # Statistical Analysis - Negative Bimonial
 nb_data <- long_data %>%

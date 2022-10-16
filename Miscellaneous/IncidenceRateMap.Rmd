@@ -28,7 +28,7 @@ full_data <- read_csv(file.choose())
 ```
 
 ```{r}
-shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))
+shapefile <- readOGR(dsn = paste0(getwd(), "/../Data/SA3_2011/"))
 
 shapefile_df <- fortify(shapefile, region = "SA3_NAME11")
 

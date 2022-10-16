@@ -33,12 +33,12 @@ library(tigris)
 ```{r read_data}
 
 # SA3 Shape File
-shapefile_df <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/"))%>%  
+shapefile_df <- readOGR(dsn = paste0(getwd(), "/../Data/SA3_2011/"))%>%  
   fortify(region = "SA3_NAME11") %>% 
   rename(alat = lat,
          along = long,
          aname = id) 
-new_shapefile <-  st_read(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>% st_geometry(shapefile_df) %>% 
+new_shapefile <-  st_read(dsn = paste0(getwd(), "/../Data/SA3_2011/")) %>% st_geometry(shapefile_df) %>% 
   fortify(region = "SA3_NAME11")
 
 # World Data Shape File
@@ -54,16 +54,18 @@ world_df <- readOGR(
 
 ```{r, cleaning}
 
-sa3_geo_data <- st_as_sf(st_read("data/SA3_2011/SA3_2011_AUST.shp")) %>% 
-  select(SA3_NAME11)
+# sa3_geo_data <- st_as_sf(st_read("/../Data/SA3_2011/SA3_2011_AUST.shp")) %>% 
+#   select(SA3_NAME11)
+# 
+# 
+# shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>%  fortify(shapefile)
+# 
+# full_data <- file.choose()
 
-
-shapefile <- readOGR(dsn = paste0(getwd(), "/Data/SA3_2011/")) %>%  fortify(shapefile)
-
-# ggplot() +
-# geom_path(data = shapefile_df, 
-#           aes(x = long, y = lat, group = group),
-#           color = 'black', fill = 'white', size = .2)
+ggplot() +
+geom_path(data = shapefile_df,
+          aes(x = along, y = alat, group = group),
+          color = 'black', fill = 'white', size = .2)
 # joint_data <- as_tibble(merge(full_data, sa3_geo_data, by.x = "SA3_NAME_2011", by.y = "SA3_NAME11"))
 # joint_data <- st_as_sf(joint_data, sf_column_name = "geometry")
 
@@ -257,8 +259,8 @@ p.local <- ggplot(animation_local, aes(rank, group = Virus_Name,
   geom_tile(aes(y = IR/2,
                 height = IR,
                 width = 0.9), alpha = 0.8, color = NA) +
-  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 6) +
-  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 6) +
+  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 11) +
+  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 11) +
   coord_flip(clip = "off", expand = FALSE)+   
   scale_fill_brewer(palette = "Dark2") +
   scale_x_reverse() +
@@ -291,7 +293,7 @@ anim_local <- p.local +
 
 
 animate(anim_local, 100, fps = 5,  width = 1200, height = 1000, 
-        renderer = gifski_renderer("Animation/gganim_local.gif"))
+        renderer = gifski_renderer("../Animation/gganim_local.gif"))
 
 ```
 
@@ -303,8 +305,8 @@ p.imp <- ggplot(animation_imp, aes(rank, group = Virus_Name,
   geom_tile(aes(y = IR/2,
                 height = IR,
                 width = 0.9), alpha = 0.8, color = NA) +
-  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 6) +
-  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 6) +
+  geom_text(aes(y = 0, label = paste(Virus_Name, " ")), vjust = 0.2, hjust = 1, size = 11) +
+  geom_text(aes(y = round(IR,2), label = round(IR_lbl,2), hjust = 0), size = 11) +
   coord_flip(clip = "off", expand = FALSE)+   
   scale_fill_brewer(palette = "Dark2") +
   scale_x_reverse() +
@@ -337,7 +339,7 @@ anim_imp <- p.imp +
 
 
 animate(anim_imp, 100, fps = 5,  width = 1200, height = 1000, 
-        renderer = gifski_renderer("Animation/gganim_imp.gif"))
+        renderer = gifski_renderer("../Animation/gganim_imp.gif"))
 
 ```
 

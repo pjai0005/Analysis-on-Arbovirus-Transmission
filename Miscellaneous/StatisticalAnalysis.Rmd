@@ -166,6 +166,87 @@ data_table <- long_data %>%
   formatRound('Incidence Rate', digits = 5)
 ```
 
+```{r}
+
+ aic_data %>% datatable(escape = FALSE, 
+                  caption = htmltools::tags$caption (style = 'caption-side: top; text-align: center;  
+                                                              color: black; font-family: Arial; 
+                                                              font-size: 150% ;', 'AIC Values')) %>%
+  #spk_add_deps()%>%
+  formatRound('AIC Value', digits = 2)
+
+ plot_data %>% datatable(escape = FALSE, 
+                  caption = htmltools::tags$caption (style = 'caption-side: top; text-align: center;  
+                                                              color: black; font-family: Arial; 
+                                                              font-size: 150% ;', 'Mean and Variance')) %>%
+  #spk_add_deps()%>%
+  formatRound('Value', digits = 10)
+```
+```{r}
+
+library(dplyr)
+library(tsibble) 
+library(fpp3)
+library(tidyverse)
+library(dplyr)
+library(fable)
+library(forecast)
+library(zoo)
+library(naniar)
+
+
+new_long <- long_data %>% 
+  filter(str_detect(Type, "IR")) %>% 
+  mutate(Date = ymd(as.character(MonthYear)),
+         Value = as.numeric(Value),
+         Value = impute_below(Value))  %>% 
+  drop_na(Date)%>%
+  group_by(Date, Virus) %>% 
+  summarise(Value = median(Value))
+
+
+new_long2 <- long_data %>% 
+  filter(str_detect(Type, "IR")) %>% 
+  mutate(Date = ymd(as.character(MonthYear)),
+         `Month...6` = month.abb(`Month...6`),
+         Value = as.numeric(Value),
+         Value = impute_below(Value))  %>% 
+  drop_na(Date)
+  
+new_long2 %>% 
+  group_by(Month...7, Virus) %>%
+  summarise(Value = mean(Value)) %>%
+ggplot(aes(x = Month...7, y = Value, color = Virus))+
+  geom_line()+
+  theme_bw()
+
+# 
+# new_long1 <- long_data %>% 
+#   filter(str_detect(Type, "IR")) %>% 
+#   mutate(Date = ymd(as.character(MonthYear)),
+#          Value = as.numeric(Value))%>%
+#   dplyr::select(Date, Value, Virus)
+
+# write.csv(new_long, "~/Desktop/new_long.csv")
+# 
+# new_long <- read_csv("~/Desktop/new_long.csv") %>% 
+#   filter(Date )
+
+new_long <- as_tsibble(new_long, key = Virus, index = Date)
+
+new_long1 %>% 
+  autoplot(Value)+
+labs(x = "Year", y = "Incidence Rate", title = "Time Series")+
+  theme_bw()
+
+new_long %>% 
+  ggsubseriesplot(Value)+
+labs(x = "Month", y = "Incidence Rate", title = "Seasonality",)+
+  theme_bw()
+  
+```
+
+
 
 # Clusters
 
@@ -247,7 +328,9 @@ neg_binomial_full_data <- glm.nb(Donation ~ ., data = nb_data)
 
 summary(neg_binomial)# has lower AIC therefore better model
 
-
+# ggplot(data = nb_data, aes(x = Value, y = Donation)) +
+#  geom_point() +
+#  geom_smooth(method = "glm.nb", se = TRUE, level = 0.95) 
 ```
 
 ```{r}
