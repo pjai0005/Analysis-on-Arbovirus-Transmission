@@ -91,7 +91,7 @@ class: center, middle, inverse
 .panelset[
 .panel[.panel-name[Project Aim `r emo::ji("target")`]
 
-`r emo::ji("mosquito")` About Dr. Elvina Viennet (Researcher at Redcross Lifeblood)
+`r emo::ji("mosquito")` About Dr. Elvina Viennet (Researcher at Australian Redcross Lifeblood)
 
   - Most of her research focuses on infectious diseases especially vector-borne diseases.
   
@@ -162,7 +162,9 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
 
 * Our data deals with **312** SA3 Regions
 
-* SA3 region boundaries are taken from 2011 census period
+* SA3 region boundaries are taken from 2011 census period and contain regional level data
+
+* Population size varies between 30000 and 130000 persons. 
 ]
 
 
@@ -185,10 +187,9 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
 
 .panel[.panel-name[Data Provided]  
 
-1. Dataset containing variables related to case count, incidence rate, donation rate, geographical information and weather conditions for the years 2007 - 2017
-  
-2. Dataset comprising of Imported Viruses, case counts and imported country names. 
+* Dataset comprising locally acquired, imported cases counts and country of importation
 
+* Contaied variables related to case count, incidence rate, donation rate, geographical information and weather conditions for the years 2007 - 2017 
 ]
 
 .panel[.panel-name[Data Gathered]  
@@ -298,6 +299,8 @@ class: center, middle, inverse
 
 .panel[.panel-name[When to perform?]  
 .pull-left[
+* Research Question: Is there a significant relationship between the response variable blood donation rate and the explanatory variables weather conditions, incidence rate and Year.
+
 * Negative Binomial is performed when the data is **over dispersed**.
 
 * The conditional variance exceeds the conditional mean.
