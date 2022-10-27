@@ -1,89 +1,89 @@
-SA4 Code,SA4 Regions,Incidence Rate
-101,Capital Region,0.019511627906976744
-102,Central Coast,0.015073643410852712
-103,Central West,0.025344961240310077
-104,Coffs Harbour - Grafton,0.0758062015503876
-105,Far West and Orana,0.06750645994832041
-106,Hunter Valley exc Newcastle,0.026031007751937986
-107,Illawarra,0.00741343669250646
-108,Mid North Coast,0.06978294573643411
-109,Murray,0.07785271317829458
-110,New England and North West,0.046806201550387595
-111,Newcastle and Lake Macquarie,0.015157622739018087
-112,Richmond - Tweed,0.06606976744186047
-113,Riverina,0.03510335917312662
-114,Southern Highlands and Shoalhaven,0.014135658914728682
-115,Sydney - Baulkham Hills and Hawkesbury,0.006817829457364341
-116,Sydney - Blacktown,0.004501291989664083
-117,Sydney - City and Inner South,0.005744186046511628
-118,Sydney - Eastern Suburbs,0.009717054263565892
-119,Sydney - Inner South West,0.0027829457364341088
-120,Sydney - Inner West,0.00437984496124031
-121,Sydney - North Sydney and Hornsby,0.005294573643410853
-122,Sydney - Northern Beaches,0.00955297157622739
-123,Sydney - Outer South West,0.003124031007751938
-124,Sydney - Outer West and Blue Mountains,0.006516025641025641
-125,Sydney - Parramatta,0.003195736434108527
-126,Sydney - Ryde,0.0030310077519379846
-127,Sydney - South West,0.0023229974160206717
-128,Sydney - Sutherland,0.005926356589147286
-201,Ballarat,0.0145297157622739
-202,Bendigo,0.03357881136950904
-203,Geelong,0.012834625322997416
-204,Hume,0.026483204134366924
-205,Latrobe - Gippsland,0.019221705426356588
-206,Melbourne - Inner,0.009033222591362126
-207,Melbourne - Inner East,0.005671834625322997
-208,Melbourne - Inner South,0.006228682170542636
-209,Melbourne - North East,0.00586046511627907
-210,Melbourne - North West,0.005889922480620155
-211,Melbourne - Outer East,0.0069891472868217055
-212,Melbourne - South East,0.005296124031007752
-213,Melbourne - West,0.004364341085271318
-214,Mornington Peninsula,0.007515503875968992
-215,North West,0.08610335917312661
-216,Shepparton,0.04777519379844961
-217,Warrnambool and South West,0.01878294573643411
-301,Brisbane - East,0.05064082687338501
-302,Brisbane - North,0.04938372093023256
-303,Brisbane - South,0.03145736434108527
-304,Brisbane - West,0.03904457364341085
-305,Brisbane Inner City,0.036651162790697675
-306,Cairns,0.17574573643410854
-307,Darling Downs - Maranoa,0.06856330749354005
-308,Fitzroy,0.11954263565891474
-309,Gold Coast,0.041154263565891476
-310,Ipswich,0.05029069767441861
-311,Logan - Beaudesert,0.04171188630490956
-312,Mackay,0.09782428940568476
-313,Moreton Bay - North,0.06723720930232559
-314,Moreton Bay - South,0.048434108527131786
-315,Queensland - Outback,0.141297157622739
-316,Sunshine Coast,0.08842790697674419
-317,Toowoomba,0.03313178294573643
-318,Townsville,0.1229922480620155
-319,Wide Bay,0.07217054263565892
-401,Adelaide - Central and Hills,0.014692137320044298
-402,Adelaide - North,0.012137984496124032
-403,Adelaide - South,0.013461240310077519
-404,Adelaide - West,0.008875968992248063
-405,Barossa - Yorke - Mid North,0.03088953488372093
-406,South Australia - Outback,0.03200387596899225
-407,South Australia - South East,0.05746511627906977
-501,Bunbury,0.0673798449612403
-502,Mandurah,0.13793023255813955
-503,Perth - Inner,0.03317054263565891
-504,Perth - North East,0.04985529715762274
-505,Perth - North West,0.030808785529715763
-506,Perth - South East,0.03909080841638981
-507,Perth - South West,0.04666046511627907
-509,Western Australia - Wheat Belt,0.061227390180878555
-510,Western Australia - Outback,0.1892170542635659
-511,Western Australia - Outback,0.09349612403100775
-601,Hobart,0.00622093023255814
-602,Launceston and North East,0.0082015503875969
-603,South East,0.010211886304909561
-604,West and North West,0.0024211886304909562
-701,Darwin,0.2026531007751938
-702,Northern Territory - Outback,0.11779549114331724
-801,Australian Capital Territory,0.007714470284237726
+SA4 Code,SA4 Regions
+101,Capital Region
+102,Central Coast
+103,Central West
+104,Coffs Harbour - Grafton
+105,Far West and Orana
+106,Hunter Valley exc Newcastle
+107,Illawarra
+108,Mid North Coast
+109,Murray
+110,New England and North West
+111,Newcastle and Lake Macquarie
+112,Richmond - Tweed
+113,Riverina
+114,Southern Highlands and Shoalhaven
+115,Sydney - Baulkham Hills and Hawkesbury
+116,Sydney - Blacktown
+117,Sydney - City and Inner South
+118,Sydney - Eastern Suburbs
+119,Sydney - Inner South West
+120,Sydney - Inner West
+121,Sydney - North Sydney and Hornsby
+122,Sydney - Northern Beaches
+123,Sydney - Outer South West
+124,Sydney - Outer West and Blue Mountains
+125,Sydney - Parramatta
+126,Sydney - Ryde
+127,Sydney - South West
+128,Sydney - Sutherland
+201,Ballarat
+202,Bendigo
+203,Geelong
+204,Hume
+205,Latrobe - Gippsland
+206,Melbourne - Inner
+207,Melbourne - Inner East
+208,Melbourne - Inner South
+209,Melbourne - North East
+210,Melbourne - North West
+211,Melbourne - Outer East
+212,Melbourne - South East
+213,Melbourne - West
+214,Mornington Peninsula
+215,North West
+216,Shepparton
+217,Warrnambool and South West
+301,Brisbane - East
+302,Brisbane - North
+303,Brisbane - South
+304,Brisbane - West
+305,Brisbane Inner City
+306,Cairns
+307,Darling Downs - Maranoa
+308,Fitzroy
+309,Gold Coast
+310,Ipswich
+311,Logan - Beaudesert
+312,Mackay
+313,Moreton Bay - North
+314,Moreton Bay - South
+315,Queensland - Outback
+316,Sunshine Coast
+317,Toowoomba
+318,Townsville
+319,Wide Bay
+401,Adelaide - Central and Hills
+402,Adelaide - North
+403,Adelaide - South
+404,Adelaide - West
+405,Barossa - Yorke - Mid North
+406,South Australia - Outback
+407,South Australia - South East
+501,Bunbury
+502,Mandurah
+503,Perth - Inner
+504,Perth - North East
+505,Perth - North West
+506,Perth - South East
+507,Perth - South West
+509,Western Australia - Wheat Belt
+510,Western Australia - Outback
+511,Western Australia - Outback
+601,Hobart
+602,Launceston and North East
+603,South East
+604,West and North West
+701,Darwin
+702,Northern Territory - Outback
+801,Australian Capital Territory
