@@ -1,11 +1,12 @@
 ---
 title: "Arbovirus Transmission in Australia"
-subtitle: "ETC5543 Business Analytics Creative Activity Report <br/> [GitHub Repository Link](https://github.com/pjai0005/Analysis-on-Arbovirus-Transmission)"
+subtitle: "ETC5543 Business Analytics Creative Activity Report <br><br> [GitHub Repository Link](https://github.com/pjai0005/Analysis-on-Arbovirus-Transmission)"
 author: "Sahinya Akila and Prachi Jaiswal"
 date: "`r Sys.Date()`"
 output:
   rmdformats::robobook:
     highlight: kate
+    css: "style.css"
 ---
 
 ```{r setup, include=FALSE}
@@ -21,23 +22,155 @@ library(tidyverse)
 library(DT)
 ```
 
+## Abstract
+
+This report aims to explain the spread of arthropod-borne viruses or arbovirus. This is a term that is generically used to describe infections caused by viruses through the bite of infected arthropods or insects like mosquitoes and ticks. The spread of these viruses began in the 1800s and continues to be a major threat to public health in Australia and around the world. Emerging or re-emerging vector-borne diseases are a significant concern for global health. A thorough understanding of diseases and interactions in their natural setting is crucial for developing successful diagnostics, vaccinations, and other control methods. The purpose of this report is to present the role of arboviruses in Australia's Statistical Area Level 3 (SA3s) regions. The project is created entirely with R studio and analyzes data using the programming language R. This work catalyses the implementation of an R Shiny App that will provide future insights into the analysis of Arbovirus transmission within and outside of Australia under various conditions. Given that arboviruses are of concern because of their potential impact, on both, the safety and the supply of products, possible implications for blood transfusion safety will be discussed. Various weather conditions like temperature, humidity, and rainfall and their implications on the donation rate and incidence rate were also analysed. Furthermore, statistical data modelling has resulted in a better understanding of the interactions between the variables associated with arboviral transmission.
+
+### Keywords
+
+*Arbovirus, R Shiny App, Statistical Area Level 3 SA3 Region, Ross River virus (RRV), Dengue virus (DENV), Barmah Forest virus (BFV), Zika virus (ZIKV), Murray Valley Encephalitis virus (MVEV), West Nile virus/Kunjin virus (WNV), Japanese Encephalitis virus (JEV), Chikungunya virus (CHIKV)*
+
+## Background
+
+Today, Ross River virus (RRV), Barmah Forest virus (BFV), and dengue virus (DENV) are three of the most common and clinically relevant arboviruses in Australia. Since 2002, Australia has observed a rise in mosquito-borne infections, with fears that this trend may continue due to climate change. Arboviral transmission is a concern "as a result of geographical and temporal patterns of vector breeding habitats and variables influencing dispersal" (Dale et al., 1998). Environmental patterns and factors that impact viral dispersion, as well as spatio-temporal dynamics of disease transmission, must be studied in order to forecast and prevent future arbovirus transmission in Australia.
+
+Although Australia has documented more than 70 arboviruses, only a few are human pathogens (such as viruses, bacteria, fungi, protozoa, and worms), and almost rare concerns are profound. The viruses which have given rise to substantial human illness in Australia are the flaviviruses and alphaviruses. The most common flaviviruses are West Nile/Kunjin, Japanese Encephalitis, Murray Valley Encephalitis, and Dengue virus, whereas the most familiar alphaviruses are Ross River and Barmah Forest virus. (Arboviral Diseases and Malaria in Australia, 2007/08: Annual Report of the National Arbovirus and Malaria Advisory Committee, 2009)
+
+It has become more bothersome because each virus has a distinct ecological and pathological characteristic as well as a potential to spread and establish in new areas. The objective of this study is to summarise the behaviours of a few of such viruses and to discuss recent findings on their ecology and dissemination by understanding the different variables that may affect their transmission. Several recent publications provide greater insight into the epidemiology of these viruses.
 
 
+## Objectives and Significance
+
+Our overall aim was to understand the arbovirus transmission over time and space. It can be further broken down into the following: 
+
+1. Developing an RShiny application to visualise the evolution of the transmission of seven viruses over a period of 15 years, in Australian SA3 regions.
+
+2. Investigate any regions where there is a danger of viral transmission, and determine whether any regions with a high rate of blood donation are also regions with a high virus incidence rate.
+
+3. Examination of weather conditions and their association with the incidence rate of viruses.
 
 
+## Ethical approval
+
+The Lifeblood Ethics Committee approved the project Viennet 12012021b on the 19th of January 2021.
+
+## Data and Methodology
+
+### Study Area
+
+According to the 2011 standard of Statistical Area Level 3 (SA3) categorisation, this study includes 334 SA3 areas that make up the geographic area of Australia (Main Features - Main Features, 2011). The Australian Bureau of Statistics (ABS) developed the SA3 region categorisation system for the purpose of analysing regional statistics. SA3 areas are big enough to prevent patients from being recognised but compact enough to qualify for a detailed breakdown of meteorological and climate data (Main Features - Main Features, 2011). The states of Queensland, New South Wales, South Australia, Western Australia, Victoria, and Tasmania were included in the research. The Australian Capital Territory, the Northern Territory, Jervis Bay, Christmas Island, Norfolk Island and the Cocos (Keeling) Islands, were also included.
 
 
+### Dataset
+
+#### Data provided
+
+There were 2 main datasets that were provided to us. These 2 data sets formed the basis of our choice of visualisations and research questions. 
+
+1. A CSV file containing incidence rate for locally transmitted and imported viruses along with information about the Year and month of transmission, geographical data (SA3 and SA4 regions), weather conditions during that particular day which includes rainfall, humidity and temperature, the population of that particular geographical region and blood donation rate.  The name of the viruses was also provided as abbreviations.
+2. An XLSX file containing data relating to the imported case count with respect to the country of origin and virus.
+
+#### Data gathered
+
+Our main aim in this project was to build visualisations that show the arbovirus transmission in Australia. For this, we required data relating to the geometric locations like the boundaries and coordinates and other such information about geographic features. So, we gathered data relating to:
+
+1. The SA3 region boundaries as of the 2011 census from the Australian Bureau of Statistics. 
+
+2. The bounds of all countries around the world to show the different countries from which the cases are being imported into Australia. 
+
+Populations were classified based on the ABS 2016 SA3 region categorisation system for the human population. (Australian Statistical Geography Standard (ASGS) | Australian Bureau of Statistics, 2022). However, the information on RRV and BFV case notifications was categorised using the 2011 SA3 method (Main Features - Main Features, 2011). There were minimal differences between the 2011 and 2016 SA3 systems, namely the splitting of numerous areas into two for the 2016 iteration. (Australian Statistical Geography Standard (ASGS) | Australian Bureau of Statistics, 2022). The fragmented SA3 areas were merged back together to match the 2011 SA3 borders once these modifications were rectified in the human population dataset. This was done in order to correctly combine the datasets on the human population with the datasets on blood donation and case notification. The Australian human population and all case notification data were used to compute infection rates per 10,000. Only blood donations and the Australian population between the ages of 20 and 69 were used to compute blood donation rates. Records of blood donations that were made in states other than those where the donor's SA3 place of residence was listed were also eliminated.
 
 
+#### Data Pre-processing
 
-<!-- https://github.com/renyuanz/leonids -->
+The data that was provided to us and the data that we collected were both thoroughly checked and pre-processed so that it was ready for the next step in our project. This is where the raw data was made coherent and transformed into a more accessible form. Raw datasets are typically characterised by incompleteness, inconsistencies, a lack of behaviour, and patterns, as well as mistakes (Acheme & Vincent, 2021). Basic preprocessing steps like checking for missing values, noise in the data, and other discrepancies were checked for and addressed accordingly. 
 
-### Statistical Analysis
+**1. Check for NA values:** NA values means not available and indicate missing values.  All the datasets were checked for NA values. Since the datasets provided to us were quite clean, there were not many columns that contained NA values. However, the columns related to donation rate did contain “ “% of missing values. Since the donation rate column is one of the explanatory variables in our analysis, we decided to omit the rows with NA values only when using the donation rate as part of our statistical modelling. While creating visualisations, these NA values were converted to 0s. The other datasets that were collected were all spatial data frames and because they contain only spatial information that is already in the data they did not contain any NA values. 
+
+**2. Removing unrecognised country names:** The column country name contained names of different countries. However, when we had a closer look at the unique countries, we found that there were country names like Overseas - Country Unknown, At Sea, Country Unknown, etc. Rows with such fictitious country names were removed during the analysis of imported cases since this would give us incorrect information. 
+
+**3. Imputing country names:** The dataset also contained inaccurate country names like China (excludes SARs), Venezuela, the Bolivarian Republic of, the United Kingdom, the Channel Islands and the Isle of Man which will not be mapped properly to the dataset that was collected by us. So, these country names were converted into simpler names like China, Venezuela, United Kingdom, etc. 
+
+**4. Checking for outliers:** Since there were multiple numerical columns and the statistical analysis will be purely based on these numerical variables, we checked for outliers in these numerical columns. Outliers are the most distant values that deviate from most of the data points in the data set thereby skewing the data. They can distort the findings of a hypothesis test and also have a significant influence on the statistical analysis (Liu, Shah & Jiang, 2004).
+
+**5.** A dataset is considered tidy when “each variable has its open column and each observation is in its row” (Wickham & Grolemund, 2016). The dataset had the virus names as part of the column name and these had to be changed into a separate column so that it follows the above-mentioned principle of tidy data. Therefore, the data was converted into a long format with the virus names as a separate column. This gave the dataset a good structure. 
+
+After completing all the pre-processing, the dataset contained information from 2007 through to 2017. The viruses that were part of the data set were CHIKV, DENV, RRV, MVEV, WNV, ZIKV and JEV. Some viruses such as RRV, MVEV, BFV, DENV, WNV are locally-acquired (LA), meaning they were acquired within Australia. While other viruses like DENV, WNV, CHIKV, ZIKV, and JEV are imported or were transmitted from outside Australian borders. The Donation rate has the number of donors divided by the population size. Weather information like the average rainfall, maximum and minimum temperatures, relative humidity, and lag of each variable at 1 month, 2-month and 3-months. The R code used for data pre-processing can be found in our GitHub repository under the folder *Lifeblood-Arbovirus-App/DataPreprocessing.R*
+
+## Creating Visualisations
+
+Data visualisations alleviate the relationship between the variables by highlighting the relationship and trends in the data. Visualisations help present and communicate large data sets into a more comprehensible form (Kelleher & Wagener, 2011). We selected different visualisations to answer the research questions mentioned below. In order to have all these visualisations in one place, we used R Shiny.  Shiny is an R package that helps build interactive web applications using the R programming language. It consists of a user interface (UI) that handles the layout and appearance of the app and a server that comprises the data flow logic of the app (Chang et al., 2021).  R shiny was chosen for the development of the web app because of its ease of use, shareability and reproducibility. Also, it did not require extensive HTML, CSS and Javascript knowledge as they usually play an important role in web development. It also contains pre-built widgets which can be used to easily create the app with minimal effort. The UI part of the app was added to UI.R and the server logic was added to Server.R. In addition to this, we also used the concept of modules in our app. Just like how functions help add abstraction to the data, shiny modules also help with code modularization. Adding to this, they also support the namespace problem that exists while creating such apps. This solves the issue by creating a global namespace where all the input and output ids can be stored and accessed. These modules can also be individually tested without having to run the app each time. A cascading style sheet is also part of our files, which are located inside the www folder.  
+
+## Research Questions
+Now that we know the study area, we came up with the final data sets, understanding the requirements given to us and deciding on the platform where the visualisations were to be created, we came up with research questions that we wished to answer by creating visualisations and deducing a relationship among the variables. These were the research questions that we aimed to answer:
+
+1. Is there a relationship between the different viruses and their place of origination and transmission?
+
+2. Is the blood donation rate affecting the incidence rate or vice-versa?
+
+3. Do the weather conditions have a significant impact on the incidence rate or the donation rate?
+
+## Virus Transmission based on Location
+### Viruses imported to Australia
+
+Understanding the pattern in imported virus transmission into Australia can help propose prevention and control mechanisms and reduce the risk of infections. These virus importations could be carried by infected travellers or immigrants from different parts of the world into Australia. We aimed to visualise the place of origin of the different viruses and the case count. Out of the 70 arboviruses (mentioned earlier in the background section), we have Japanese Encephalitis, Zika, Chikungunya, West Nile/Kunjin, and, most significantly, dengue viruses, which are a few of them addressed in our dataset. These viruses have caused severe human diseases in Australia either currently or in the past. Over the last decade, all of these viruses have been linked to human illnesses. This can be confirmed from the map above, where we can see that the dengue virus has the most significant infection rate of any virus. “With the increasing frequency of dengue virus introductions over the past decade, there has been some concern expressed that dengue might become endemic in the north-east of Australia.” (Division, n.d.)
+
+The best way to represent this information was to build a connection map which is also known as the Link Map or Ray Map. They are simple yet powerful visualisations that have a curved or straight line between 2 points in the map to show the relationship between them. Since they are appropriate in showing connections and relationships between geographic locations, links were created between the countries from where the virus was imported to Australia. Additionally, we created Radio buttons to allow the user to be able to choose different viruses and understand the different points of importation for different viruses.
+
+![](images/IM.gif)
+
+
+According to the map above, dengue is one of the greatest numbers of viruses entering Australia, with a total of 9,218 imported cases. Countries such as Indonesia (6,545 cases) and Thailand (1,387) exported almost 86% of the total number of dengue viruses in Australia. Another virus-like Chikungunya is the second most imported virus, with 241 cases imported from Indonesia and 476 from India. In comparison, the West Nile/Kunjin virus has one of the lowest numbers of importation of the virus in Australia, with only 6 cases reported. As a result, the nations with the most instances of the virus in Australia are Indonesia, Thailand, and India, which contribute 6667, 1367, and 591 cases, respectively.
+
+### Viruses Locally Transmitted 
+
+Apart from viruses that are imported from countries around the world, there are a few viruses that are locally transmitted too. Viruses like RRV, BFV and MVEV, originated from Australia and hence are being locally transmitted. Other viruses like DENV and WNV are found both locally and across different countries. 
+
+Dengue reappeared in north Queensland in 1981–1982, 25 years after it had been absent, and its prevalence has risen ever since. The rise in foreign travel, a key contributor to the emergence and spread of infectious illnesses, is linked to this. Concurrent to this, these viruses have been moving south towards the New South Wales border and west towards the Northern Territory border from north Queensland.
+
+In 1995, the Torres Strait had the first known outbreak of Japanese encephalitis in the Australasian area. In the centre of Torres Strait, Badu Island recorded three occurrences, two among which were fatal. (Hanna et al., 1996).
+
+### Locally Acquired vs Imported Cases
+
+There are eight different viruses in all that we are dealing with, five of which are classified as imported and five as locally transmitted. The reason for this is that both groups contain the dengue virus and the West Nile/Kunjin virus. As a result, locally-transmitted viruses are Ross River, Barmah Forest, Murray Valley Encephalitis, Dengue, and West Nile/Kunjin viruses. Chikungunya, Japanese Encephalitis, Zika, Dengue, and West Nile/Kunjin Viruses are foreign acquired viruses. 
+
+The visualisations for these were added by taking into account these requirements given by our supervisor:
+
+1. Group Year (2007 - 2011, 2012 - 2017)
+
+2. Ability to compare locally-acquired and imported cases
+
+3. Examine the incidence rates for the different viruses
+
+We created a group of radio buttons so that the user can choose between the 2 group years. Furthermore, we built another radio button group so that the transmission type (locally acquired or imported) can also be toggled between. We also added a select input for the user to be able to choose from the virus list. This virus list will update itself when the transmission type is switched between locally acquired and imported because the virus list is not the same for them. As for the visualisation itself, we created a choropleth map that maps the colour in a region to the incidence rate. We choose our colour palette to be from blue to red which depicts lower incidence rates as blue and gradually changes to red as the incidence rate increases. Likewise, we also added a tooltip that shows up when the user clicks any SA3 region. 
+
+![](images/LA.gif)
+
+Apart from this, we also created an animated bar chart that compares the incidence rate for all the viruses based on their transmission type through the years 2007 - 2017. This was done using the gganimate package in R. 
+
+<img src="images/gganim_imp.gif" style="width:50%; float: left;">
+<img src="images/gganim_local.gif" style="width:50%; float: right;">
+
+From the animation graph above, we can see that for locally transmitted viruses, Ross River virus and Barmah Forest virus are much higher than the other viruses, and in contrast to this, we have West Nile Kunjin virus with the lowest sum incidence rate for virtually all the years. Moving on to the foreign-acquired viruses, we notice that the dengue virus has been continuously high from 2007 to 2017, followed by the competition between Chikungunya and Japanese Encephalitis viruses. When it comes to imported viruses, the West Nile/Kunjin virus has the lowest occurrence rate for both categories.
+
+We discovered that the highest occurrence of locally-transmitted viruses occurred in 2015. The highest incidence of imported viruses occurred in 2016, after breaking down the data by year for the animation above. The prevalence of viruses acquired abroad was lowest in 2007, whereas that of locally-transmitted viruses was lowest in 2016. It is interesting to note that 2013 has the second-highest total incidence rate for viruses that are acquired locally and abroad.
+
+## Blood donation rate
+
+When a person has lost blood due to surgery or injury, blood transfusion is a potentially life-saving process where lost blood is replaced. This is done through a routine medical procedure in which donated blood is pushed in through a tube placed on a vein which is usually in the arm. However, this process also has the ability to spread a variety of species, such as bacteria, viruses, and parasites, potentially leading to an infection. Transfusion-transmitted infections (TTIs) are infections that develop after receiving blood transfusions from an infected individual. (Diseases and Organisms | Blood Safety | CDC, 2019).  Since tests for these arboviruses are not always performed, there is a higher chance of collecting infected blood if the blood donor is asymptomatic (infected but without symptoms), which increases the risk that the blood recipient will get sick because their immune system is likely to have been compromised by their current state of health. Therefore, we thought the danger of the spread of arboviruses by blood transfusion might affect the incidence rate of virus transmission.
+
+The donation rate is an important factor in understanding the transmission of arbovirus in any region. There may also be a relationship between the blood donation rate and incidence rate. Therefore, we wanted to investigate this further and create appropriate visualisations. In order to do this, we selected variables like the donation rate, Year and incidence rate. We used data from the Australian Red Cross Lifeblood to create the graphic for the blood donation rate. The age, gender, and geographic location of the donor are used to collect the data. A bubble map would be an appropriate representation of the variables along with a line graph to discover any trends in the data. A bubble map is similar to a bubble graph but with a map embedded in it. The colour of the bubbles represents the average donation rate in that region and the size of the bubble describes the average incidence rate in that area. A date slider was added as a user input which can be used to narrow down the Year to see a pattern for a particular period or for a single year. Also, a select input with the list of SA3 regions is added so that the user can choose to select 1 or more SA3 regions and try to compare the results. Besides this, we built a line graph that shows the change in average incidence and donation rate over the years. This would also be a helpful graphic to understand the trend and seasonality of the data. The lines and bubbles are modified with the input of chosen SA3 locations and the slider input of years.
+
+![](images/DR.gif)
+
+Australia's high and low blood donation locations are depicted on the bubble map in green and red, respectively. We also have a line graph with the incidence rate indicated in red and the donation rate displayed beside the map highlighted in green.
+
+## Statistical Analysis
 
 We performed some statistical analysis in order to uncover underlying patterns, trends, and other significant details in the data. In order to understand the relationship between the different variables and know which variable has a significant effect on the incidence or the donation rate, we built a series of statistical models by considering different combinations of variables. Statistical analysis provides context and explanations for the otherwise vague numbers in the dataset (Ali & Bhaskar, 2016). Though visualisations are the sole purpose of this project, the results and inferences are definitive only when statistically tested and quantitatively proven. Therefore, a statistical analysis was carried out on the data set along with creating the visualisations. 
 
 
-#### Negative Binomial 
+### Negative Binomial 
 
 We performed a Negative Binomial Distribution, which is a discrete probability distribution for random variables (Negative Binomial & Zero-Inflated Models in R Using Microbiome Data | Nutribiomes, n.d.). The random variable is the number of iterations that result in a certain success rate. To put it another way, it is the frequency of failures prior to success (Stephanie, 2015).
  
@@ -62,7 +195,7 @@ knitr::include_graphics("images/aic.png")
 Negative Binomial (Weather) and Negative Binomial (Full Data) have additional parameters like weather conditions (rainfall, temperature, and humidity) and all variables respectively as their dependent variables. We used the Akaike information criterion (AIC) as a metric to evaluate the quality of our models. Low complexity and a good fit are indications of a model with a low AIC. We discovered that expanding the number of parameters improves the AIC values of negative binomial regression. As a result, we chose the basic negative binomial model (donation rate as our predictor variable and the incidence rate as the dependent variable) for further analysis.
 
 
-##### Negative Binomial Summary
+#### Negative Binomial Summary
 
 The table below shows the summary statistics of the full data negative binomial.
 
@@ -81,7 +214,7 @@ Residual Deviance: We have a low residual deviation, which indicates our trained
 Degree of freedom: The residual deviation should be near to the degrees of freedom for a well-fitting model, however, it is not the case in this instance.
 
 
-##### Under and overfitting of data
+#### Under and overfitting of data
 
 ```{r, out.width = "100%", fig.align = "center"}
 knitr::include_graphics("images/over-under.png")
@@ -92,8 +225,7 @@ The theoretical Negative Binomial fit is represented by the red curved line. The
 Additionally, we have used a method called zero-inflated negative binomial regression to determine if the data particularly accumulated at a zero distribution. Negative binomial regression with zero inflation is used to model count variables containing excessively many zeros, typically for overdispersed count outcome variables. Theoretically speaking, the extra zeros may be represented independently and are produced by a different process from the count values (Zero-Inflated Negative Binomial Regression | R Data Analysis Examples, n.d.). When we performed Zero-Inflated Negative Binomial Regression on the fundamental negative binomial model (with the incidence rate as the dependent variable and the donation rate as the predictor variable), we received all NA values as a result. Consequently, we made the decision not to pursue it further.
 
 
-
-#### Principal Component Analysis
+### Principal Component Analysis
 
 The other statistical analysis that we performed was a Principal Component Analysis of the blood donation data. It is a well-known unsupervised learning method for decreasing the dimensionality of data. It is one of the most extensively used techniques for a wide range of tasks, including data de-noising, information compression, and exploratory data analysis. While preventing information loss, it simultaneously improves interpretability (Principal Component Analysis in Machine Learning | Simplilearn, n.d.). Vectors make up the primary components, but they are not picked at random. The biplot that we produced (distance biplot), shown below, makes it simple to understand the key components.
 
@@ -121,13 +253,13 @@ From the Biplot, we also found that regions like 604 and 102 (West and North Wes
 The correlation between temperature and incidence rate was an intriguing finding in the Principal Component Analysis, which led us to our next segment where we investigated the effects of different weather conditions with respect to the incidence rate.
 
 
-### The Effects of Weather Conditions 
+## Effects of Weather Conditions 
 
 The potential impacts of global warming on human health have received a lot of attention in recent years. The contagious infections most likely to be impacted by global warming, are those spread particularly by viruses carried by mosquitoes. It is commonly acknowledged that weather has a significant role in the development of epidemics of human arboviral illness in Australia. According to Tozan et al., 2020, the transmission of such arboviral infections is highly sensitive to both climatic and non-climatic conditions. A slight change in weather patterns can cause tremendous alterations in virus transmission cycles. In particular, epidemics of these viruses might be brought on by excessive rain and flooding. Understanding the relationship between various weather conditions and virus transmission can help you be more prepared when such weather changes occur. Let us have a deeper look at each weather condition below.
 
 
 
-#### Temperature
+### Temperature
 
 The whole life cycle of a vector is temperature and humidity-dependent. Hence, vector competence, which is the physiological ability of a mosquito to become infected with and its ability to transmit disease (Kain et al., 2022), is also temperature and humidity-dependent. Different species react differently to changes in temperature, though. Vector competence should increase with an increase in temperature within a certain range.  Additionally, blood-feeding, which is when insect vectors feed on animals to take their blood (also known as hematophagy), is susceptible to changes in temperature. Apart from this, mating is also massively affected by temperature. A temperature rise is supposed to make the virus move more towards the poles and to regions with higher elevations (where the temperature is low). 
  
@@ -152,7 +284,7 @@ As can be noticed here, the temperature decreases gradually from the Northern to
 
 
 
-#### Rainfall
+### Rainfall
 
 Rainfall can have a delayed effect on the transmission of arbovirus(Lowe et al., 2018). So, determining the effects of rainfall on transmission can be very difficult since it also depends on the ecological conditions. Some vectors prefer to breed and lay eggs in containers filled with water hence increasing the vector population as mentioned by Epstein (2007). Since we are focussing on the incidence rate and rainfall, we would like to discover the dependency of the incidence rate on rainfall. Disease outbreaks usually occur after a lagged period of heavy rainfall in a region. With increased rainfall, the amount of larvae increases. However, just this increase cannot be a precursor to arboviral transmission as a larvae has to mature and go through metamorphosis before it can become a carrier of any virus (Stewart et al., 2013). However, we are not interested in understanding the lagged relationship between rainfall and incidence rate since it is out of the scope of this project. Just like with temperature, we laid out the average rainfall rate and incidence rate on a linear model. Ideally, increased rainfall should increase the incidence rate as mentioned earlier.
 
@@ -174,7 +306,7 @@ Coastal regions like Cassowary, Mackay, Port Doughlas, etc. have high rainfall a
 
 
 
-#### Relative Humidity
+### Relative Humidity
 
 As previously stated, temperature and humidity have an impact on a vector's life cycle. Numerous viruses have been demonstrated to be sensitive to the surrounding humidity, although the exact processes behind this phenomenon are still unknown. The relationship between relative humidity (RH) and viability has been thoroughly reviewed in a WHO report (Sobsey & Meschke, 2003.).  We have compared RH (the ratio of the actual water vapour pressure to the saturation vapour pressure of the surrounding air) with the incidence rate of infections. 
 
@@ -189,15 +321,13 @@ The dataset contained the mean minimum and maximum RH by SA3 regions. Just like 
 knitr::include_graphics("images/humid_map.png")
 ```
 
-According to Yang & Marr, 2012), we discovered that while non - enveloped viruses are more durable at higher RH, enveloped viruses, which have a lipid coating, stick around longer at lower RH. Since we are dealing with the genus of RNA viruses known as alphaviruses, which likely appear to have an outer membrane (Wikipedia Contributors, 2019), they can thrive better in less humid environments. The map above illustrates that Australia's coastal regions have greater humidity levels, as winds travelling from the sea to land carry a considerable amount of moisture with them. They substantially increase the humidity in coastal regions. As a result, compared to the inland of the country, viral transmission is relatively lower close to the shores. No matter the temperature of your area, research demonstrates that a space with 50% humidity may not only provide you with the comfort you want but is also proven to enable quick viral inactivation, with fewer than 1% of viruses still active after two days (How Healthy Humidity Can Help Fight Viruses and More, 2021).
+According to Yang & Marr (2012), we discovered that while non - enveloped viruses are more durable at higher RH, enveloped viruses, which have a lipid coating, stick around longer at lower RH. Since we are dealing with the genus of RNA viruses known as alphaviruses, which likely appear to have an outer membrane (Wikipedia Contributors, 2019), they can thrive better in less humid environments. The map above illustrates that Australia's coastal regions have greater humidity levels, as winds travelling from the sea to land carry a considerable amount of moisture with them. They substantially increase the humidity in coastal regions. As a result, compared to the inland of the country, viral transmission is relatively lower close to the shores. No matter the temperature of your area, research demonstrates that a space with 50% humidity may not only provide you with the comfort you want but is also proven to enable quick viral inactivation, with fewer than 1% of viruses still active after two days (How Healthy Humidity Can Help Fight Viruses and More, 2021).
 
 
 
-### Results and Discussion
+## Results and Discussion
 
 The various analysis and visualisations created helped in answering the research questions that were mentioned earlier. When comparing the imported and locally transmitted cases, Dengue is the virus with the highest number of imported cases whereas West Nile Kunjin and Japanese Encephalitis virus have the lowest number of imported cases. The incidence rate is generally high for the Palmerston region for all viruses. However, this could also be due to it being a larger SA3 region when compared to the rest. Ross river Virus is one of the highly transmitted viruses locally within Australia. Following this is the Barmah Forest virus which shows a sudden increase in the year 2013. Dengue virus is the most highly imported virus. It is interesting to note that Dengue cases are high when imported but one of the least when locally acquired. After performing the statistical analysis, it can be concluded that though the explanatory variables show a significant relationship with the incidence rate, the same cannot be said for the donation rate. Both temperature and rainfall show a positive correlation with the incidence rate. However, humidity does not show any significant relationship with the incidence rate. All the 3 weather conditions do not have any strong association with the SA3 regions and they do not depict strong trends or seasonality. However, east coast subtropical climatic regions include New South Wales and Queensland. This entails greater temperatures and noticeable rainy seasons together with high humidity that is practically year-round (Climate in Australia, n.d.). The places located on the eastern shore areas, which therefore experience more extreme weather conditions, are the outliers in our weather linear model graphs.
-
-
 
 The shiny app that was built along the way is a culmination of all the analysis and visualisations that were done. We ensured that the code was modularised using the concept of shiny modules. Apart from this, we also worked on creating maps from scratch using shapefiles and also using the leaflet package. We have made the app as interactive as possible by adding various user inputs. The maps and graphs also show interactivity when clicked or hovered over. As far as the styling of the app is concerned, we made use of CSS, HTML and in-built shiny themes to make the app look aesthetic. We used GitHub extensively to collaborate with each other and also used it for version control. 
 
@@ -214,7 +344,7 @@ This project has allowed us to explore various realms of software development an
 Arbovirus transmission is increasing day by day, due to the change in weather patterns and increased cross-border travel. Understanding the reason behind the transmission of such viruses is crucial in dealing with the repercussions of it. In this era, we need to use technology as an important tool in making stories out of the raw data we possess. So, we built a shiny app that could visually present facts and figures about arbovirus transmission in Australia. This added value to the findings that were obtained from the statistical analysis and other patterns that existed in the data. Adding to this, statistical modelling of the data has led to a better understanding of the relationships between the variables that surround arboviral transmission. This app can be used in other settings where studies about other viral transmissions are carried out or for other countries that seek to understand the spread of this virus in their country. This project has also helped us hone our skills in shiny app development, project management and active collaboration through [GitHub](https://github.com/pjai0005/Analysis-on-Arbovirus-Transmission). Overall, it has been a very enriching experience for us to have worked on a project like this. 
 
 
-### Reference
+## Reference
 
 Acheme, I., & Vincent, O. (2021). Machine-learning models for predicting survivability in COVID-19 patients. Data Science For COVID-19, 317-336. doi: 10.1016/b978-0-12-824536-1.00011-3
 

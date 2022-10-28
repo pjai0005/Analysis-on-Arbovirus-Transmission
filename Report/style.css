@@ -1,0 +1,20 @@
+p {
+  text-align: justify;
+  line-height: 23pt;
+}
+
+.section level3{
+  text-align: justify;
+  line-height: 23pt;
+}
+
+ol{
+  text-align: justify;
+  line-height: 23pt;
+}
+
+.book .book-summary li.title {
+    font-size: 15pt;
+    font-weight: bold;
+    padding: 11px 15px;
+}
