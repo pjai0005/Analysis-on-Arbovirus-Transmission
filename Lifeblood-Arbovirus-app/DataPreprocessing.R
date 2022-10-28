@@ -149,11 +149,6 @@ weather_graph <- full_data%>%
   pivot_longer(cols = -c('Year', 'Virus_name'), 
                names_to = "Type", values_to = "Value")
 
-rain_map_data <- full_data %>% 
-  group_by(SA3_NAME_2011, Virus_name) %>% 
-  summarise(Rainfall = round(mean(Rainavg), 2),
-            incidece_rate = round(mean(Value, na.rm = TRUE), 2))
-
 # Statistical Analysis - Negative Bimonial---------------------------------------------------
 nb_data <- long_data %>%
   filter(str_detect(type, "IR"))
