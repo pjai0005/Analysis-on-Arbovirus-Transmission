@@ -273,7 +273,7 @@ shinyServer(function(input, output, session) {
         shapefile_temp@data <- shapefile_temp@data %>% replace(is.na(.), 0)
         
         content_temp <- paste0(sep = "<br/>", "<b>SA3 Region: </b>",shapefile_temp$SA3_NAME_2011, "<br>",
-                               "<b>Avg. Incidence Rate: </b>", round(shapefile_temp$Rainfall, 2), "<br><b>Incidence Rate: </b>", shapefile_temp$incidece_rate)
+                               "<b>Avg. Rainfall: </b>", round(shapefile_temp$Rainfall, 2), "<br><b>Incidence Rate: </b>", shapefile_temp$incidece_rate)
         
         pal_temp <- colorNumeric("RdBu", map_data$Rainfall, reverse = TRUE)
         

@@ -91,7 +91,7 @@ class: center, middle, inverse
 .panelset[
 .panel[.panel-name[Project Aim `r emo::ji("target")`]
 
-`r emo::ji("mosquito")` About Dr. Elvina Viennet (Researcher at Redcross Lifeblood)
+`r emo::ji("mosquito")` About Dr. Elvina Viennet (Researcher at Australian Redcross Lifeblood)
 
   - Most of her research focuses on infectious diseases especially vector-borne diseases.
   
@@ -112,15 +112,15 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
 
 ####  Imported
 
-* CHIKV
+* Chikungunya
 
-* JEV
+* Japanese Encephalitis
 
-* ZIKV
+* Zika
 
-* DENV
+* Dengue
 
-* WNV
+* West Nile Kunjin
 
 
 ]
@@ -128,15 +128,15 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
 
 ####  Local
 
-* RRV
+* Ross River 
 
-* MVEV
+* Murray Valley Encephalitis
 
-* BFV
+* Barmah Forest
 
-* DENV
+* Dengue
 
-* WNV
+* West Nile Kunjin
 
 ]
 
@@ -162,7 +162,9 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
 
 * Our data deals with **312** SA3 Regions
 
-* SA3 region boundaries are taken from 2011 census period
+* SA3 region boundaries are taken from 2011 census period and contain regional level data
+
+* Population size varies between 30000 and 130000 persons. 
 ]
 
 
@@ -185,17 +187,16 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
 
 .panel[.panel-name[Data Provided]  
 
-1. Dataset containing variables related to case count, incidence rate, donation rate, geographical information and weather conditions for the years 2007 - 2017
-  
-2. Dataset comprising of Imported Viruses, case counts and imported country names. 
+* Dataset comprising locally acquired, imported cases counts and country of importation
 
+* Contaied variables related to case count, incidence rate, donation rate, geographical information and weather conditions for the years 2007 - 2017 
 ]
 
 .panel[.panel-name[Data Gathered]  
 
 1. Australian SA3 region Shape file as of 2011 from ABS
 
-2. World Shape file containing country borders for all 195 countries
+2. World Shape file containing country borders for all countries
 
 ]
 
@@ -209,9 +210,9 @@ Arbovirus is a term used to refer to a group of viruses that are transmitted by 
   * At Sea
   
 * Replaced country names like
-  * China (excludes SARs and Taiwan) → China
+  * China (excludes SARs) → China
   * Venezuela, Bolivarian Republic of → Venezuela
-  * United Kingdom, Channel Islands and Isle of Man → Hong Kong
+  * United Kingdom, Channel Islands and Isle of Man → United Kingdom
   
 * Checked for outliers – None found
 
@@ -276,8 +277,6 @@ class: center, middle, inverse
 
 * Transfusion transmitted virus infections occur due to blood donors with arbovirus infections
 
-* No clear relationship between SA3 regions, donation rate and incidence rate
-
 ]
 
 
@@ -300,6 +299,8 @@ class: center, middle, inverse
 
 .panel[.panel-name[When to perform?]  
 .pull-left[
+* Research Question: Is there a significant relationship between the response variable blood donation rate and the explanatory variables weather conditions, incidence rate and Year.
+
 * Negative Binomial is performed when the data is **over dispersed**.
 
 * The conditional variance exceeds the conditional mean.
@@ -334,11 +335,7 @@ class: center, middle, inverse
 .pull-left[
 * median deviance residual is almost zero, our model is **not biased.**
 
-* we are 15 standard deviations below the mean
-
 * Negative correlation between response and explanatory variables.
-
-* If `incidence rate` `r emo::ji("small_red_triangle_down")`, the `donation rate` also goes `r emo::ji("small_red_triangle_down")`
 ]
 
 
@@ -357,7 +354,7 @@ class: center, middle, inverse
 ## PCA Biplot
 
 .pull-left[
-* Donation Rate and Population are the most important contributors for the first PC
+* Donation Rate and Population are the most important contributors for PC 1
 
 * Population and donation rate are correlated
 
@@ -417,7 +414,7 @@ style="position:absolute; right:20px; top:80px;">
 ]
 
 ---
-
+#Weather Conditions
 ## Rainfall `r emo::ji("umbrella")`
 
 .panelset[
