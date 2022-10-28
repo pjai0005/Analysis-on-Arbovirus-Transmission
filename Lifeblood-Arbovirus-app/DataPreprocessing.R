@@ -102,7 +102,9 @@ full_data <- full_data %>%
   separate(col = Virus_Type, into = c("Virus_name", "Type"), sep = "\\_") %>% 
   mutate(Transmission = ifelse(grepl("LA", Type), "Local", "Imported"))
 
-# Data for temperature overview graph---------------------------------------------------
+# Data weather---------------------------------------------------
+
+#  weather lm graph data 
 weather_data <- full_data %>% 
   filter(str_detect(Type, "IR")) %>% 
   group_by(MonthYear) %>% 
@@ -115,13 +117,18 @@ weather_data <- full_data %>%
             `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
             `Incidence Percent` = round(mean(Value, na.rm = TRUE), 2)*100)
 
-# temperature map data 
+# Temperature map data 
 temperature_map_data <- full_data %>% 
   group_by(SA3_NAME_2011, Virus_name) %>% 
   summarise(Max_temp = round(mean(meanMaxTavg), 2),
             Min_temp = round(mean(meanMinTavg), 2),
             `Average Temperature` = round((Max_temp+Min_temp)/2, 2),
             incidece_rate = round(mean(Value, na.rm = TRUE), 2))
+
+# Rainfall map data 
+rain_map_data <- full_data %>% 
+  group_by(SA3_NAME_2011, Virus_name) %>% 
+  summarise(Rainfall = round(mean(Rainavg), 2))
 
 # Humidity map data
 humidity_map_data <- full_data %>% 
@@ -131,6 +138,7 @@ humidity_map_data <- full_data %>%
             `Average Humidity` = round((Max_humd+Min_humd)/2, 2),
             incidece_rate = round(mean(Value, na.rm = TRUE), 2))
 
+# weather line graph data 
 weather_graph <- full_data%>% 
   filter(str_detect(Type, "IR")) %>% 
   group_by(Year, Virus_name) %>% 
@@ -141,25 +149,7 @@ weather_graph <- full_data%>%
   pivot_longer(cols = -c('Year', 'Virus_name'), 
                names_to = "Type", values_to = "Value")
 
-rain_map_data <- full_data %>% 
-  group_by(SA3_NAME_2011, Virus_name) %>% 
-  summarise(Rainfall = round(mean(Rainavg), 2),
-            incidece_rate = round(mean(Value, na.rm = TRUE), 2))
-
-# 3d weather lm
-weather_data_3d <- full_data %>% 
-  filter(str_detect(Type, "IR")) %>% 
-  group_by(Year) %>% 
-  summarise(Rainfall = round(mean(Rainavg), 2),
-            Min_Temprature = round(mean(meanMinTavg), 2),
-            Max_Temprature = round(mean(meanMaxTavg), 2),
-            Min_Humidity = round(mean(meanRHTMinavg), 2),
-            Max_Humidity = round(mean(meanRHTMaxavg), 2),
-            `Average Humidity` = round((Min_Humidity+Max_Humidity)/2, 2),
-            `Average Temperature` = round((Min_Temprature+Max_Temprature)/2, 2),
-            `Incidence Percent` = round(mean(Value, na.rm = TRUE), 2)*100)
-
-# Statistical Analysis - Negative Bimonial
+# Statistical Analysis - Negative Bimonial---------------------------------------------------
 nb_data <- long_data %>%
   filter(str_detect(type, "IR"))
 
