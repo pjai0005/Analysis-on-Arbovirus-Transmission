@@ -12,6 +12,14 @@ People who possess the data should be able to load it by running the following c
 
 The `file.choose()` function within `read_csv()` will open a file chooser dialogue window which will allow the users to choose and read the appropriate csv dataset from their system to the code base.
 
+To access the shiny app, open `Lifeblood-Arbivirus-app` folder > Server.R in RStudio and run the app. 
+
+To access the presentation slides created using xaringan, open Presentation > Presentation.Rmd in RStudio and knit the file.
+
+To access the final report, open Report > Report.Rmd and knit it using RStudio. Alternatively, you can view it in [RPubs]()
+
 The Data folder contains the shape file of [SA3 region of Australia from 2011 Census data](https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.001July%202011).
 
 For getting access to the dataset, contact [Dr. Elvina Viennet](mailto:eviennet@redcrossblood.org.au).
+
+This project was done as part of a internship research project under Australian Red Cross Lifeblood and Monash University, Australia. Australian Red Cross Lifeblood owns the copyright in all the material created and published here.
